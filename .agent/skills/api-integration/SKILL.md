@@ -12,7 +12,7 @@ description: Automates the exact pattern for connecting frontend components to R
 1. **Identify the Data Source**: Determine if the task requires:
    - **Local State**: Use `useState` / `useReducer`.
    - **Global UI State**: Use React Context or basic Redux.
-   - **Server State (Firebase/API)**: Use RTK Query (Redux Toolkit) or standard Redux thunks depending on the existing architecture in `yog-web`.
+   - **Server State (Firebase/API)**: Use RTK Query (Redux Toolkit) or standard Redux thunks depending on the existing architecture in this repo.
 
 2. **Redux / RTK Query Protocol**:
    - Locate the relevant Redux slice in `src/core/store/`.

@@ -34,7 +34,7 @@ description: An interactive orchestrator that uses specialized sub-agent persona
 **Goal**: Design the technical implementation plan.
 
 1. **Analyze Requirements**: Read the `requirements_spec.md`.
-2. **System Reconnaissance**: Use `grep_search` to find where this new feature fits into the existing `yog-web` architecture.
+2. **System Reconnaissance**: Use `grep_search` to find where this new feature fits into the existing repo architecture.
 3. **Draft Plan**: Create an `implementation_plan.md` detailing exact files to create/modify and the data flow.
 4. **Approval**: Use `notify_user` to mandate the user's go-ahead on the architecture plan.
 

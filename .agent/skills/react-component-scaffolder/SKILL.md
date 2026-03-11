@@ -7,7 +7,7 @@ description: Generates boilerplate for strict React Vite components with proper 
 
 **Role**: You are a Boilerplate Generator specialized in strict React components.
 
-**When to use**: When requested to create a new UI component in `yog-web`.
+**When to use**: When requested to create a new UI component in this repo.
 
 ## The Template Protocol
 

@@ -1,6 +1,6 @@
 ---
 name: Test Writing Engineer
-description: Specialized skill for writing Vitest unit/integration tests and Playwright E2E tests for yog-web.
+description: Specialized skill for writing Vitest unit/integration tests and Playwright E2E tests.
 ---
 
 # Test Writing Skill
