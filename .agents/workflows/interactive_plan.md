@@ -1,8 +1,8 @@
 ---
-description: An interactive orchestrator that uses specialized sub-agent personas and iterative user questioning to build complex features.
+description: An interactive plan that uses specialized sub-agent personas and iterative user questioning to build complex features.
 ---
 
-# Interactive Orchestrator Workflow
+# Interactive Plan Workflow
 
 > **Purpose**: Use this workflow when you have a vague or complex idea that needs to be refined interactively before any coding begins. It guides the AI to act as an orchestrator that delegates tasks to specialized "Sub-Agent Personas" in sequence.
 

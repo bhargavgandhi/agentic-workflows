@@ -6,7 +6,7 @@ trigger: manual
 
 ## description: Workspace-specific rules for React + TypeScript frontend repository.
 
-# Project Standards & Workspace Rules
+# React Standards & Workspace Rules
 
 **Purpose**: Define the specific conventions, patterns, and operational guardrails for this React/TypeScript repository.
 **Why it exists**: To ensure output matches existing architectural paradigms without needing to teach the agent every time.

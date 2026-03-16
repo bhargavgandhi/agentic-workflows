@@ -1,0 +1,29 @@
+{
+  "name": "agents-skills",
+  "version": "1.0.0",
+  "description": "Cross-IDE agent scaffolding: install rules, skills, workflows and hooks for Antigravity, VS Code, Cursor, and Claude Code",
+  "bin": {
+    "agents-skills": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    ".agents/"
+  ],
+  "scripts": {
+    "start": "node ./bin/cli.js"
+  },
+  "keywords": [
+    "agent",
+    "ai",
+    "rules",
+    "skills"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "gray-matter": "^4.0.3",
+    "picocolors": "^1.1.1"
+  }
+}
