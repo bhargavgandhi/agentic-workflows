@@ -8,8 +8,8 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
  *
  * rules/project_standards.md → .github/copilot-instructions.md
  * rules/* (rest)        → .github/rules/
- * skills/               → .github/agents/skills/
- * workflows/            → .github/agents/workflows/
+ * skills/               → .github/skills/
+ * workflows/            → .github/agents/
  * hooks/                → .github/hooks/
  */
 class VSCodeAdapter extends IDEAdapter {
@@ -24,9 +24,6 @@ class VSCodeAdapter extends IDEAdapter {
     const { clack } = options;
     const targetDir = path.join(baseDir, '.github');
     ensureDir(targetDir);
-
-    const agentsDir = path.join(targetDir, 'agents');
-    ensureDir(agentsDir);
 
     // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
@@ -46,13 +43,13 @@ class VSCodeAdapter extends IDEAdapter {
       }
     }
 
-    // 2. Skills → .github/agents/skills/
+    // 2. Skills → .github/skills/
     const skillsSrc = path.join(sourceDir, 'skills');
-    await smartCopyFolder(skillsSrc, path.join(agentsDir, 'skills'), clack, 'VS Code Skill');
+    await smartCopyFolder(skillsSrc, path.join(targetDir, 'skills'), clack, 'VS Code Skill');
 
-    // 3. Workflows → .github/agents/workflows/
+    // 3. Workflows → .github/agents/
     const workflowsSrc = path.join(sourceDir, 'workflows');
-    await smartCopyFolder(workflowsSrc, path.join(agentsDir, 'workflows'), clack, 'VS Code Workflow');
+    await smartCopyFolder(workflowsSrc, path.join(targetDir, 'agents'), clack, 'VS Code Workflow');
 
     // 4. Hooks → .github/hooks/
     const hooksSrc = path.join(sourceDir, 'hooks');

@@ -10,8 +10,8 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
  *
  * rules/project_standards.md → .cursorrules (root)
  * rules/* (rest)        → .cursor/rules/*.mdc  (MDC format)
- * skills/               → .cursor/agents/skills/
- * workflows/            → .cursor/agents/workflows/
+ * skills/               → .cursor/skills/
+ * workflows/            → .cursor/agents/
  * hooks/                → .cursor/rules/<name>.mdc (alwaysApply: true)
  */
 class CursorAdapter extends IDEAdapter {
@@ -29,9 +29,6 @@ class CursorAdapter extends IDEAdapter {
 
     const cursorRulesDir = path.join(targetDir, 'rules');
     ensureDir(cursorRulesDir);
-
-    const agentsDir = path.join(targetDir, 'agents');
-    ensureDir(agentsDir);
 
     // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
@@ -57,13 +54,13 @@ class CursorAdapter extends IDEAdapter {
       }
     }
 
-    // 2. Skills → .cursor/agents/skills/
+    // 2. Skills → .cursor/skills/
     const skillsSrc = path.join(sourceDir, 'skills');
-    await smartCopyFolder(skillsSrc, path.join(agentsDir, 'skills'), clack, 'Cursor Skill');
+    await smartCopyFolder(skillsSrc, path.join(targetDir, 'skills'), clack, 'Cursor Skill');
 
-    // 3. Workflows → .cursor/agents/workflows/
+    // 3. Workflows → .cursor/agents/
     const workflowsSrc = path.join(sourceDir, 'workflows');
-    await smartCopyFolder(workflowsSrc, path.join(agentsDir, 'workflows'), clack, 'Cursor Workflow');
+    await smartCopyFolder(workflowsSrc, path.join(targetDir, 'agents'), clack, 'Cursor Workflow');
 
     // 4. Hooks → .cursor/rules/<name>.mdc with alwaysApply: true
     const hooksSrc = path.join(sourceDir, 'hooks');

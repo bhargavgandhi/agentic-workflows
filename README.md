@@ -52,8 +52,8 @@ The interactive CLI will ask you two questions:
 | ---------------------------- | ------------------------------------ | --------------------------------- | ----------------------------------- | ----------------- |
 | `rules/project_standards.md` | `.agents/rules/project_standards.md` | `.github/copilot-instructions.md` | `.cursorrules`                      | `CLAUDE.md`       |
 | `rules/*.md` (rest)          | `.agents/rules/`                     | `.github/rules/`                  | `.cursor/rules/*.mdc`               | `.claude/rules/`  |
-| `skills/`                    | `.agents/skills/`                    | `.github/agents/skills/`          | `.cursor/agents/skills/`            | `.claude/skills/` |
-| `workflows/`                 | `.agents/workflows/`                 | `.github/agents/workflows/`       | `.cursor/agents/workflows/`         | `.claude/agents/` |
+| `skills/`                    | `.agents/skills/`                    | `.github/skills/`                 | `.cursor/skills/`                   | `.claude/skills/` |
+| `workflows/`                 | `.agents/workflows/`                 | `.github/agents/`                 | `.cursor/agents/`                   | `.claude/agents/` |
 | `hooks/`                     | `.agents/hooks/`                     | `.github/hooks/`                  | `.cursor/rules/*.mdc` (alwaysApply) | `.claude/hooks/`  |
 
 > **Cursor note:** Rules are converted from `.md` to `.mdc` format with the `alwaysApply`, `description`, and `globs` frontmatter fields required by Cursor.
