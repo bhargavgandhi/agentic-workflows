@@ -1,12 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const { IDEAdapter } = require('./base');
-const { backupIfExists, ensureDir, logCopied } = require('./antigravity');
+const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 
 /**
  * Claude Code adapter.
  *
- * rules/global-rules.md → CLAUDE.md (root)
+ * rules/project_standards.md → CLAUDE.md (root)
  * rules/* (rest)        → .claude/rules/
  * skills/               → .claude/skills/
  * workflows/            → .claude/agents/
@@ -20,48 +20,37 @@ class ClaudeAdapter extends IDEAdapter {
            fs.existsSync(path.join(workspacePath, 'CLAUDE.md'));
   }
 
-  async install(sourceDir, baseDir) {
+  async install(sourceDir, baseDir, scope, options = {}) {
+    const { clack } = options;
     const targetDir = path.join(baseDir, '.claude');
-    backupIfExists(targetDir, baseDir, '.claude');
     ensureDir(targetDir);
 
-    // Rules: global-rules.md → CLAUDE.md, rest → .claude/rules/
+    // 1. Rules: project_standards.md → CLAUDE.md, rest → .claude/rules/
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      const globalRules = path.join(rulesDir, 'global-rules.md');
+      const globalRules = path.join(rulesDir, 'project_standards.md');
       if (fs.existsSync(globalRules)) {
-        fs.copyFileSync(globalRules, path.join(baseDir, 'CLAUDE.md'));
-        console.log(`   📄 global-rules.md → CLAUDE.md`);
+        await smartCopy(globalRules, path.join(baseDir, 'CLAUDE.md'), clack, 'Claude Instructions');
       }
       const claudeRulesDir = path.join(targetDir, 'rules');
       ensureDir(claudeRulesDir);
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'global-rules.md') continue;
-        fs.cpSync(path.join(rulesDir, file), path.join(claudeRulesDir, file), { recursive: true, force: true });
+        if (file === 'project_standards.md') continue;
+        await smartCopy(path.join(rulesDir, file), path.join(claudeRulesDir, file), clack, 'Claude Rule');
       }
-      logCopied('rules (rest)', claudeRulesDir);
     }
 
-    // Skills → .claude/skills/ (native format match)
+    // 2. Skills → .claude/skills/
     const skillsSrc = path.join(sourceDir, 'skills');
-    if (fs.existsSync(skillsSrc)) {
-      fs.cpSync(skillsSrc, path.join(targetDir, 'skills'), { recursive: true, force: true });
-      logCopied('skills', path.join(targetDir, 'skills'));
-    }
+    await smartCopyFolder(skillsSrc, path.join(targetDir, 'skills'), clack, 'Claude Skill');
 
-    // Workflows → .claude/agents/
+    // 3. Workflows → .claude/agents/
     const workflowsSrc = path.join(sourceDir, 'workflows');
-    if (fs.existsSync(workflowsSrc)) {
-      fs.cpSync(workflowsSrc, path.join(targetDir, 'agents'), { recursive: true, force: true });
-      logCopied('workflows', path.join(targetDir, 'agents'));
-    }
+    await smartCopyFolder(workflowsSrc, path.join(targetDir, 'agents'), clack, 'Claude Workflow');
 
-    // Hooks → .claude/hooks/
+    // 4. Hooks → .claude/hooks/
     const hooksSrc = path.join(sourceDir, 'hooks');
-    if (fs.existsSync(hooksSrc)) {
-      fs.cpSync(hooksSrc, path.join(targetDir, 'hooks'), { recursive: true, force: true });
-      logCopied('hooks', path.join(targetDir, 'hooks'));
-    }
+    await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'Claude Hook');
   }
 }
 

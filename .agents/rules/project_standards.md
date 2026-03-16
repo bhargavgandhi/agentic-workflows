@@ -13,7 +13,7 @@ description: Global invariant agent behaviors, constraints, and execution polici
 **Why it exists**: To prevent runaway context pollution, prevent destructive terminal executions, and enforce deterministic reasoning.
 **Token Optimization Strategy**: Terse, imperative statements. No fluff. Process-oriented over descriptive.
 **Execution Policy Guidance**: Safety-first. All terminal commands must be user-verified unless explicitly marked safe.
-**Workspace Standards:** If your task involves writing or reviewing code, you MUST read [.agent/rules/project-standards.md] before beginning implementation.
+**Workspace Standards:** If your task involves writing or reviewing code, you MUST read [rules/project_standards.md] before beginning implementation.
 
 ## 1. Context Engineering & Memory
 

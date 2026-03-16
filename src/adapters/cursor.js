@@ -1,13 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const matter = require('gray-matter');
 const { IDEAdapter } = require('./base');
-const { backupIfExists, ensureDir, logCopied } = require('./antigravity');
+const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 
 /**
  * Cursor adapter.
  *
- * rules/global-rules.md → .cursorrules (root)
+ * rules/project_standards.md → .cursorrules (root)
  * rules/* (rest)        → .cursor/rules/*.mdc  (MDC format)
  * skills/               → .cursor/agents/skills/
  * workflows/            → .cursor/agents/workflows/
@@ -21,9 +22,9 @@ class CursorAdapter extends IDEAdapter {
            fs.existsSync(path.join(workspacePath, '.cursorrules'));
   }
 
-  async install(sourceDir, baseDir) {
+  async install(sourceDir, baseDir, scope, options = {}) {
+    const { clack } = options;
     const targetDir = path.join(baseDir, '.cursor');
-    backupIfExists(targetDir, baseDir, '.cursor');
     ensureDir(targetDir);
 
     const cursorRulesDir = path.join(targetDir, 'rules');
@@ -32,55 +33,57 @@ class CursorAdapter extends IDEAdapter {
     const agentsDir = path.join(targetDir, 'agents');
     ensureDir(agentsDir);
 
-    // Rules
+    // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      const globalRules = path.join(rulesDir, 'global-rules.md');
+      // project_standards.md → .cursorrules
+      const globalRules = path.join(rulesDir, 'project_standards.md');
       if (fs.existsSync(globalRules)) {
-        fs.copyFileSync(globalRules, path.join(baseDir, '.cursorrules'));
-        console.log(`   📄 global-rules.md → .cursorrules`);
+        await smartCopy(globalRules, path.join(baseDir, '.cursorrules'), clack, 'Cursor Rules Root');
       }
+
+      // rules/* (rest) → .cursor/rules/*.mdc
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'global-rules.md') continue;
+        if (file === 'project_standards.md' || !file.endsWith('.md')) continue;
         const srcFile = path.join(rulesDir, file);
         const name = path.basename(file, '.md');
         const mdc = convertToMDC(srcFile, 'auto');
-        fs.writeFileSync(path.join(cursorRulesDir, `${name}.mdc`), mdc);
+        
+        // Write to temp and smartCopy
+        const tmpFile = path.join(os.tmpdir(), `cursor_rule_${name}.mdc`);
+        fs.writeFileSync(tmpFile, mdc);
+        await smartCopy(tmpFile, path.join(cursorRulesDir, `${name}.mdc`), clack, 'Cursor MDC Rule');
+        fs.rmSync(tmpFile);
       }
-      logCopied('rules → .cursor/rules/*.mdc', cursorRulesDir);
     }
 
-    // Skills → .cursor/agents/skills/
+    // 2. Skills → .cursor/agents/skills/
     const skillsSrc = path.join(sourceDir, 'skills');
-    if (fs.existsSync(skillsSrc)) {
-      fs.cpSync(skillsSrc, path.join(agentsDir, 'skills'), { recursive: true, force: true });
-      logCopied('skills', path.join(agentsDir, 'skills'));
-    }
+    await smartCopyFolder(skillsSrc, path.join(agentsDir, 'skills'), clack, 'Cursor Skill');
 
-    // Workflows → .cursor/agents/workflows/
+    // 3. Workflows → .cursor/agents/workflows/
     const workflowsSrc = path.join(sourceDir, 'workflows');
-    if (fs.existsSync(workflowsSrc)) {
-      fs.cpSync(workflowsSrc, path.join(agentsDir, 'workflows'), { recursive: true, force: true });
-      logCopied('workflows', path.join(agentsDir, 'workflows'));
-    }
+    await smartCopyFolder(workflowsSrc, path.join(agentsDir, 'workflows'), clack, 'Cursor Workflow');
 
-    // Hooks → .cursor/rules/<name>.mdc with alwaysApply: true
+    // 4. Hooks → .cursor/rules/<name>.mdc with alwaysApply: true
     const hooksSrc = path.join(sourceDir, 'hooks');
     if (fs.existsSync(hooksSrc)) {
       for (const file of fs.readdirSync(hooksSrc)) {
         if (!file.endsWith('.md')) continue;
         const name = path.basename(file, '.md');
         const mdc = convertToMDC(path.join(hooksSrc, file), 'always');
-        fs.writeFileSync(path.join(cursorRulesDir, `${name}.mdc`), mdc);
+        
+        const tmpFile = path.join(os.tmpdir(), `cursor_hook_${name}.mdc`);
+        fs.writeFileSync(tmpFile, mdc);
+        await smartCopy(tmpFile, path.join(cursorRulesDir, `${name}.mdc`), clack, 'Cursor Hook Rule');
+        fs.rmSync(tmpFile);
       }
-      logCopied('hooks → .cursor/rules/*.mdc (alwaysApply)', cursorRulesDir);
     }
   }
 }
 
 /**
  * Convert a canonical .md file to Cursor's .mdc format.
- * Injects required Cursor frontmatter: description, alwaysApply, globs.
  */
 function convertToMDC(filePath, scope = 'auto') {
   const raw = fs.readFileSync(filePath, 'utf8');
@@ -90,7 +93,6 @@ function convertToMDC(filePath, scope = 'auto') {
     globs: parsed.data.globs || '',
     alwaysApply: scope === 'always',
     ...parsed.data,
-    // Ensure Cursor-required fields always win
     alwaysApply: scope === 'always',
   };
   const fmStr = Object.entries(fm).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join('\n');

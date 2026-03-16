@@ -62,8 +62,8 @@ Apply the **5-Whys Technique**:
 ## Step 4: Apply Minimal Fix
 
 1. **Principle**: Fix the root cause, not the symptom. Apply the smallest change that resolves the issue.
-2. **Follow Rules**: Adhere to `.agent/rules/code_quality.md` and `.agent/rules/project_standards.md`.
-3. **Impact Check**: If changing a shared file, verify all consumers still work (Strategic Impact Analysis from `.agent/rules/workflow_protocols.md`).
+2. **Follow Rules**: Adhere to `rules/code_quality.md` and `rules/project_standards.md`.
+3. **Impact Check**: If changing a shared file, verify all consumers still work (Strategic Impact Analysis from `rules/workflow_protocols.md`).
 
 ---
 
@@ -104,5 +104,5 @@ Ask the user to test locally.
 
 When the user confirms the fix is good, or explicitly asks to commit/push:
 
-- Execute **Phase 5: Git & PR Operations** from the `/.agent/workflows/feature_lifecycle.md` workflow step-by-step.
+- Execute **Phase 5: Git & PR Operations** from the `/workflows/feature_lifecycle.md` workflow step-by-step.
 - This ensures the code is reviewed, committed with conventional messages, pushed, and a PR is created consistently.

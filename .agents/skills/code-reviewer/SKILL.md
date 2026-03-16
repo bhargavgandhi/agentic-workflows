@@ -14,7 +14,7 @@ description: Critiques recent changes, looking for architectural flaws, tech deb
    - DO NOT rewrite the code entirely. Your job is to critique and suggest.
 
 2. **The Checklist**:
-   Review the changes against the `.agent/rules/project-standards.md` focusing strictly on:
+   Review the changes against the `rules/project_standards.md` focusing strictly on:
    - **Type Safety**: Are there explicit `any` types? Are interfaces missing?
    - **Component Size**: Is the component doing too much? Should it be broken down?
    - **DRY violations**: Was logic duplicated instead of abstracted?

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# 🛡️ agents-skills Pre-Commit Hook
+# Ensuring high quality before every commit.
+
+echo "🔍 Running pre-commit validation..."
+
+# 1. Check for Syntax Errors in the scripts
+for file in bin/*.js src/**/*.js; do
+  node --check "$file" || { echo "❌ Syntax error in $file"; exit 1; }
+done
+
+# 2. Check for legacy .agent references
+if grep -r "\.agent/" .agents/ > /dev/null; then
+  echo "❌ Found legacy .agent/ references in .agents/ folder. Please use .agents/ instead."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+exit 0

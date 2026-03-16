@@ -23,11 +23,10 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
 
 1. **Read Documentation**:
    - Read `PRODUCT_DOCUMENTATION.md` and `TECHNICAL_DOCUMENTATION.md`.
-   - Read any relevant files in `.agent/docs/` (e.g., `app_flow.md`, `leader_flow.md`).
 
 2. **Search for Existing Solutions**:
    - Use `grep_search` and `find_by_name` to check if a similar component, utility, or pattern already exists.
-   - Follow the **Smart Component Creation Protocol** in `.agent/rules/workflow_protocols.md`.
+   - Follow the **Smart Component Creation Protocol** in `rules/workflow_protocols.md`.
    - **Rule**: Reuse and extend before creating new files.
 
 3. **Analyze Architecture**:
@@ -44,7 +43,7 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
 > This is the ONLY manual step. The AI MUST pause here and wait for user approval before writing any code.
 
 1. **Write an Implementation Plan**:
-   - Follow the template in `.agent/workflows/plan.md`.
+   - Follow the template in `workflows/plan.md`.
    - The plan MUST be in plain English so a non-technical team member can understand it.
    - Include: what will change, what files are affected, and any risks.
 
@@ -61,9 +60,9 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
 **Goal**: Write production-quality code that follows all project standards.
 
 1. **Follow All Rules**:
-   - `.agent/rules/project_standards.md` — React/Vite/Tailwind conventions.
-   - `.agent/rules/code_quality.md` — Formatting, linting, type safety, DRY.
-   - `.agent/rules/workflow_protocols.md` — Component creation, impact analysis.
+   - `rules/project_standards.md` — React/Vite/Tailwind conventions.
+   - `rules/code_quality.md` — Formatting, linting, type safety, DRY.
+   - `rules/workflow_protocols.md` — Component creation, impact analysis.
 
 2. **Implementation Checklist**:
    - [ ] Functional components with hooks.
@@ -72,7 +71,7 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
    - [ ] Followed naming conventions (PascalCase components, camelCase utils, kebab-case directories).
    - [ ] Used `cn()` helper for conditional Tailwind classes.
 
-3. **For UI Changes**: Follow the `frontend-design` skill in `.agent/skills/frontend-design/SKILL.md`.
+3. **For UI Changes**: Follow the `frontend-design` skill in `skills/frontend-design/SKILL.md`.
 
 ---
 
@@ -137,7 +136,7 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
    ```
 
 2. **Run Code Review**:
-   - Before committing, run the `/.agent/workflows/code_review.md` workflow to systematically review recent changes.
+   - Before committing, run the `/workflows/code_review.md` workflow to systematically review recent changes.
    - Address any feedback or issues caught during the review.
 
 3. **Stage & Commit**:
@@ -169,7 +168,7 @@ description: End-to-end orchestration for building features, fixing bugs, and sh
    ```
 
 5. **Post PR Review (Optional)**:
-   - If requested, run the `/.agent/workflows/post_pr_review.md` workflow to post the code review feedback directly to the PR as inline comments.
+   - If requested, run the `/workflows/post_pr_review.md` workflow to post the code review feedback directly to the PR as inline comments.
 
 ---
 

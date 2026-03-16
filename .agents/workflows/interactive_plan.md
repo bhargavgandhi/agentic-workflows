@@ -16,7 +16,6 @@ description: An interactive plan that uses specialized sub-agent personas and it
 1. **Initial Assessment**: Read the user's initial request.
 2. **Codebase Context First**: Before asking questions, scan the codebase for relevant context:
    - Read `PRODUCT_DOCUMENTATION.md` and `TECHNICAL_DOCUMENTATION.md` if they exist.
-   - Read any relevant files in `.agent/docs/` (e.g., `app_flow.md`, `leader_flow.md`).
    - Use `Grep` to check if a similar feature or component already exists.
    - This prevents asking questions already answered by existing documentation.
 3. **Interactive Questioning**: Do not write any code yet. Use the `notify_user` tool to ask 2-3 highly targeted questions about:
@@ -70,7 +69,7 @@ _The AI will now execute the plan, adopting specific skills:_
 > [!IMPORTANT]
 > This phase is **only triggered when the user explicitly asks** (e.g., "push this", "create a PR"). Never auto-run git commands without user approval.
 
-1. **Run Code Review**: Before committing, run the `.agent/workflows/code_review.md` workflow against all changed files. Address any issues found.
+1. **Run Code Review**: Before committing, run the `workflows/code_review.md` workflow against all changed files. Address any issues found.
 
 2. **Create a Branch** (if not already on a feature branch):
    - Feature: `feature/<short-description>`
@@ -97,4 +96,4 @@ _The AI will now execute the plan, adopting specific skills:_
    gh pr create --title "<type>: <description>" --body "<summary>" --base develop
    ```
 
-5. **Post PR Review (Optional)**: If requested, run `.agent/workflows/post_pr_review.md` to post inline review comments on the PR.
+5. **Post PR Review (Optional)**: If requested, run `workflows/post_pr_review.md` to post inline review comments on the PR.

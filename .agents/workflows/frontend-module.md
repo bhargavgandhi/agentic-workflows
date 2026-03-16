@@ -46,7 +46,7 @@ description: Create Frontend Module (Strategic Agent Flow)
 
 - Perform a comprehensive Code Review similar to a PR review. Check existing implementations and compare with new changes.
 - Provide structured feedback, comments, and architectural critique for the code changes directly to the user.
-- Review the implemented code against `.agent/rules/project-standards.md`.
+- Review the implemented code against `rules/project_standards.md`.
 - Check for:
   - TypeScript strictness (`any` usage).
   - Component size and complexity.

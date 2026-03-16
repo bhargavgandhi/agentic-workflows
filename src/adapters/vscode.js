@@ -1,12 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const { IDEAdapter } = require('./base');
-const { backupIfExists, ensureDir, logCopied } = require('./antigravity');
+const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 
 /**
  * VS Code / GitHub Copilot adapter.
  *
- * rules/global-rules.md → .github/copilot-instructions.md
+ * rules/project_standards.md → .github/copilot-instructions.md
  * rules/* (rest)        → .github/rules/
  * skills/               → .github/agents/skills/
  * workflows/            → .github/agents/workflows/
@@ -20,52 +20,43 @@ class VSCodeAdapter extends IDEAdapter {
            fs.existsSync(path.join(workspacePath, '.vscode'));
   }
 
-  async install(sourceDir, baseDir) {
+  async install(sourceDir, baseDir, scope, options = {}) {
+    const { clack } = options;
     const targetDir = path.join(baseDir, '.github');
-    backupIfExists(targetDir, baseDir, '.github');
     ensureDir(targetDir);
 
     const agentsDir = path.join(targetDir, 'agents');
     ensureDir(agentsDir);
 
-    // Rules
+    // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      const globalRules = path.join(rulesDir, 'global-rules.md');
+      // project_standards.md → .github/copilot-instructions.md
+      const globalRules = path.join(rulesDir, 'project_standards.md');
       if (fs.existsSync(globalRules)) {
-        fs.copyFileSync(globalRules, path.join(targetDir, 'copilot-instructions.md'));
-        console.log(`   📄 global-rules.md → .github/copilot-instructions.md`);
+        await smartCopy(globalRules, path.join(targetDir, 'copilot-instructions.md'), clack, 'VS Code Instructions');
       }
+
+      // rules/* (rest) → .github/rules/
       const githubRulesDir = path.join(targetDir, 'rules');
       ensureDir(githubRulesDir);
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'global-rules.md') continue;
-        const src = path.join(rulesDir, file);
-        fs.cpSync(src, path.join(githubRulesDir, file), { recursive: true, force: true });
+        if (file === 'project_standards.md') continue;
+        await smartCopy(path.join(rulesDir, file), path.join(githubRulesDir, file), clack, 'VS Code Rule');
       }
-      logCopied('rules (rest)', githubRulesDir);
     }
 
-    // Skills → .github/agents/skills/
+    // 2. Skills → .github/agents/skills/
     const skillsSrc = path.join(sourceDir, 'skills');
-    if (fs.existsSync(skillsSrc)) {
-      fs.cpSync(skillsSrc, path.join(agentsDir, 'skills'), { recursive: true, force: true });
-      logCopied('skills', path.join(agentsDir, 'skills'));
-    }
+    await smartCopyFolder(skillsSrc, path.join(agentsDir, 'skills'), clack, 'VS Code Skill');
 
-    // Workflows → .github/agents/workflows/
+    // 3. Workflows → .github/agents/workflows/
     const workflowsSrc = path.join(sourceDir, 'workflows');
-    if (fs.existsSync(workflowsSrc)) {
-      fs.cpSync(workflowsSrc, path.join(agentsDir, 'workflows'), { recursive: true, force: true });
-      logCopied('workflows', path.join(agentsDir, 'workflows'));
-    }
+    await smartCopyFolder(workflowsSrc, path.join(agentsDir, 'workflows'), clack, 'VS Code Workflow');
 
-    // Hooks → .github/hooks/
+    // 4. Hooks → .github/hooks/
     const hooksSrc = path.join(sourceDir, 'hooks');
-    if (fs.existsSync(hooksSrc)) {
-      fs.cpSync(hooksSrc, path.join(targetDir, 'hooks'), { recursive: true, force: true });
-      logCopied('hooks', path.join(targetDir, 'hooks'));
-    }
+    await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'VS Code Hook');
   }
 }
 

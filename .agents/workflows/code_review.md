@@ -55,7 +55,7 @@ Before providing any review feedback, you must methodically analyze the modified
 
 ### 6) Architecture & Design
 
-6.1) Does the code follow established patterns in the `.agent/rules/project-standards.md`?
+6.1) Does the code follow established patterns in the `rules/`?
 6.2) Is the code modular and reusable?
 6.3) Are responsibilities properly separated (e.g., UI components vs. business logic hooks)?
 6.4) Does it follow SOLID principles where applicable?

@@ -18,6 +18,16 @@ npx agents-skills
 
 ---
 
+## Key Features
+
+- **🚀 Multi-IDE Support**: Antigravity, VS Code, Cursor, and Claude Code.
+- **🛡️ Safety First**: Automatic blanket backups (`~/.gemini_backup`) before any global changes.
+- **🧠 Smart Conflict Resolution**: Choose to Overwrite, Keep both (`_copy`), Merge, or Skip when files already exist.
+- **✨ Cursor-Ready**: Automatically converts Markdown rules to `.mdc` format with proper frontmatter.
+- **🤖 AI-Powered Hooks**: Includes pre-commit and post-push instructions for your AI assistant.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -40,7 +50,7 @@ The interactive CLI will ask you two questions:
 
 | Source (`.agents/`) | Antigravity | VS Code / Copilot | Cursor | Claude Code |
 |---|---|---|---|---|
-| `rules/global-rules.md` | `.agents/rules/global-rules.md` | `.github/copilot-instructions.md` | `.cursorrules` | `CLAUDE.md` |
+| `rules/project_standards.md` | `.agents/rules/project_standards.md` | `.github/copilot-instructions.md` | `.cursorrules` | `CLAUDE.md` |
 | `rules/*.md` (rest) | `.agents/rules/` | `.github/rules/` | `.cursor/rules/*.mdc` | `.claude/rules/` |
 | `skills/` | `.agents/skills/` | `.github/agents/skills/` | `.cursor/agents/skills/` | `.claude/skills/` |
 | `workflows/` | `.agents/workflows/` | `.github/agents/workflows/` | `.cursor/agents/workflows/` | `.claude/agents/` |
@@ -55,8 +65,10 @@ The interactive CLI will ask you two questions:
 ### Rules (`rules/`)
 | File | Description |
 |---|---|
-| `global-rules.md` | Universal AI behavior guidelines (becomes the primary system prompt) |
+| `project_standards.md` | Universal AI behavior guidelines (becomes the primary system prompt) |
 | `nodejs-standards.md` | Node.js architecture, security, and performance standards |
+| `code_quality.md` | DRY, SOLID, naming, and error handling standards |
+| `workflow_protocols.md` | Research -> Plan -> Execute -> Verify lifecycle protocols |
 
 ### Skills (`skills/`)
 | Folder | Description |
@@ -78,7 +90,8 @@ The interactive CLI will ask you two questions:
 | `code_review.md` | Systematic PR-style code review |
 | `debugging_agent.md` | Root cause analysis and bug hunting |
 | `refactor.md` | Safe, behavior-preserving refactoring |
-| `interactive_plan.md` | Deep reasoning planning session |
+| `interactive_plan.md` | Interactive multi-round requirement gathering session |
+| `plan.md` | Deep reasoning technical implementation planning template |
 | `frontend-module.md` | Strategic frontend module creation |
 | `post_pr_review.md` | Post-review GitHub PR inline comment posting |
 
@@ -90,24 +103,37 @@ The interactive CLI will ask you two questions:
 
 ---
 
+## Development & Quality
+
+This repository comes with built-in hooks to ensure code quality:
+
+- **Code Review**: Run `npm run code-review` to scan your staged changes for TODOs, console logs, and legacy references.
+- **Pre-commit**: Automatically runs syntax checks and validation before every commit.
+- **Setup Hooks**: Hooks are automatically configured on `npm install`, but you can manually trigger it with `npm run setup-hooks`.
+
 ## Project Structure
 
-```
-agents-skills/
-├── bin/
-│   └── cli.js              # CLI entry point
-├── src/
-│   └── adapters/
-│       ├── base.js          # IDEAdapter interface
-│       ├── antigravity.js   # Antigravity adapter
-│       ├── vscode.js        # VS Code / GitHub Copilot adapter
-│       ├── cursor.js        # Cursor adapter (.mdc format)
-│       └── claude.js        # Claude Code adapter
-└── .agents/                 # Canonical source templates
-    ├── rules/
-    ├── skills/
-    ├── workflows/
-    └── hooks/
+```text
+.agents/        # Canonical agent source files (Distributed)
+├── rules/      # Style guides & AI instructions
+├── skills/     # Capability-specific prompt snippets
+├── workflows/  # Multi-step task orchestrations
+└── hooks/      # AI-powered event handlers (e.g. pre-commit)
+
+bin/            # CLI Entry point
+├── cli.js      # Main CLI logic
+
+src/            # Core logic & Adapters
+├── adapters/   # IDE-specific mapping logic
+│   ├── base.js
+│   ├── antigravity.js
+│   ├── vscode.js
+│   ├── cursor.js
+│   └── claude.js
+└── utils/      # Shared utilities (installer, conflict resolution)
+
+hooks/          # Git hook implementations for current repository
+docs/           # Landing page assets (GitHub Pages)
 ```
 
 ---

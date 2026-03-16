@@ -13,7 +13,7 @@ trigger: manual
 **Token Optimization Strategy**: Bullet points, exact library names, strict boundaries.
 **Execution Policy Guidance**: Verification commands (lint/test) are safe to run (read-only), but build/install commands require review.
 
-> **IMPORTANT**: The role of this file is to describe common mistakes and confusion points that agents might encounter as they work in this project. If you ever encounter something in the project that surprises you, please alert the developer working with you and indicate that this is the case in the `project-standards.md` file to help prevent future agents from having the same issue.
+> **IMPORTANT**: The role of this file is to describe common mistakes and confusion points that agents might encounter as they work in this project. If you ever encounter something in the project that surprises you, please alert the developer working with you and indicate that this is the case in the `project_standards.md` file to help prevent future agents from having the same issue.
 
 ## 1. Tech Stack Assumptions
 

@@ -69,7 +69,7 @@ async function main() {
     const adapter = ADAPTERS.find(a => a.name === ideName);
     spinner.start(`Installing for ${ideName}...`);
     try {
-      await adapter.install(SOURCE_DIR, baseDir);
+      await adapter.install(SOURCE_DIR, baseDir, scope, { clack });
       spinner.stop(picocolors.green(`✓ ${ideName} installed`));
     } catch (err) {
       spinner.stop(picocolors.red(`✗ ${ideName} failed: ${err.message}`));

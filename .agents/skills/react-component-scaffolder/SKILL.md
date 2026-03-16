@@ -18,7 +18,7 @@ description: Generates boilerplate for strict React Vite components with proper 
      - `ComponentName.types.ts` (Required ONLY if the interface exceeds 5 properties, otherwise keep in `.tsx`).
 
 2. **File References**:
-   Read the standard template file located at `.agent/skills/react-component-scaffolder/templates/Component.tsx`. You **must** copy this exact structure when generating the component.
+   Read the standard template file located at `skills/react-component-scaffolder/templates/Component.tsx`. You **must** copy this exact structure when generating the component.
 
 3. **Strict Rules**:
    - Use `function Component() {}` over `const Component = () => {}` for the main export to improve React DevTools readability.

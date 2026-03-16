@@ -19,7 +19,10 @@
     ".agents/"
   ],
   "scripts": {
-    "start": "node ./bin/cli.js"
+    "start": "node ./bin/cli.js",
+    "code-review": "./hooks/code-review.sh",
+    "setup-hooks": "git config core.hooksPath hooks",
+    "postinstall": "npm run setup-hooks"
   },
   "keywords": [
     "agent",

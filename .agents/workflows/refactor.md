@@ -41,7 +41,7 @@ description: Apply systematic reasoning to safely refactor code without changing
    - [ ] Add new tests if needed
 
 3. execute the refactoring steps one by one.
-   - **Follow Rules**: Adhere to `.agent/rules/code_quality.md` and `.agent/rules/project_standards.md`.
+   - **Follow Rules**: Adhere to `rules/code_quality.md` and `rules/project_standards.md`.
    - **Crucial**: Run quality checks after _every_ step.
    - **Crucial**: If a step breaks checks, revert and rethink. Do not pile fix upon fix.
 
@@ -54,5 +54,5 @@ description: Apply systematic reasoning to safely refactor code without changing
 
 6. **Git & PR Operations**:
    When the user confirms the refactor is good, or explicitly asks to commit/push:
-   - Execute **Phase 5: Git & PR Operations** from the `/.agent/workflows/feature_lifecycle.md` workflow step-by-step.
+   - Execute **Phase 5: Git & PR Operations** from the `/workflows/feature_lifecycle.md` workflow step-by-step.
    - This ensures the code is reviewed, committed with conventional messages, pushed, and a PR is created consistently.

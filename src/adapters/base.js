@@ -13,12 +13,14 @@ class IDEAdapter {
    */
   detect(workspacePath) { return false; }
 
-  /**
+   /**
    * Run the full installation into the target base directory.
    * @param {string} sourceDir  — absolute path to canonical .agents/ folder
    * @param {string} baseDir    — absolute path to workspace root or home dir
+   * @param {string} scope      — 'local' or 'global'
+   * @param {object} options    — additional options (e.g., { clack })
    */
-  async install(sourceDir, baseDir) {
+  async install(sourceDir, baseDir, scope, options = {}) {
     throw new Error('install() not implemented');
   }
 }
