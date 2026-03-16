@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>agents-skills | Cross-IDE Agent Scaffolding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030303;
+            --accent-primary: #8e44ad;
+            --accent-secondary: #2980b9;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-hover: rgba(255, 255, 255, 0.06);
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, .brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Gradient Background meshes */
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(142, 68, 173, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(41, 128, 185, 0.15) 0%, transparent 40%);
+            filter: blur(80px);
+            animation: pulse 15s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            height: 64px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .cta-button {
+            background: var(--text-main);
+            color: var(--bg-color);
+            padding: 10px 24px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
+        }
+
+        /* Hero Section */
+        header {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 20px 80px;
+        }
+
+        .hero-badge {
+            background: rgba(142, 68, 173, 0.1);
+            border: 1px solid rgba(142, 68, 173, 0.2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #d28dfc;
+            margin-bottom: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        header h1 {
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            margin-bottom: 24px;
+            letter-spacing: -3px;
+            line-height:  0.95;
+            background: linear-gradient(to bottom, #fff 40%, #777);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            max-width: 600px;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        /* Terminal Command */
+        .terminal-container {
+            position: relative;
+            background: #0a0a0a;
+            border: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: fit-content;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .terminal-container:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.02);
+        }
+
+        .terminal-prefix {
+            color: var(--accent-primary);
+            font-weight: 800;
+        }
+
+        .terminal-input {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .copy-icon {
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        /* Visualization Section */
+        .viz-section {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .viz-container {
+            height: 400px;
+            position: relative;
+            margin-top: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center-node {
+            width: 120px;
+            height: 120px;
+            background: var(--glass-bg);
+            border: 2px solid var(--accent-primary);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 0 50px rgba(142, 68, 173,0.3);
+        }
+
+        .ide-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .ide-node:hover {
+            border-color: var(--accent-secondary);
+            transform: translateY(-5px);
+            background: var(--card-hover);
+        }
+
+        /* Position IDE nodes */
+        .vscode { transform: translate(-300px, -50px); }
+        .cursor { transform: translate(300px, -50px); }
+        .claude { transform: translate(-150px, 150px); }
+        .antigravity { transform: translate(150px, 150px); }
+
+        /* SVG Paths for animation */
+        .stream-paths {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .path-line {
+            stroke: rgba(142, 68, 173, 0.2);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5, 5;
+            animation: dash 10s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+
+        /* Features/Grid */
+        .grid-section {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 32px;
+            border-radius: 24px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            background: var(--card-hover);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-8px);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--accent-primary);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        footer {
+            padding: 100px 20px 40px;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-credits {
+            margin-top: 60px;
+            font-size: 0.8rem;
+            color: #444;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            header h1 { font-size: 3.5rem; }
+            .vscode { transform: translate(-80px, -120px); }
+            .cursor { transform: translate(80px, -120px); }
+            .claude { transform: translate(-80px, 120px); }
+            .antigravity { transform: translate(80px, 120px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="mesh-bg"></div>
+
+    <nav>
+        <div class="brand">agents-skills</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#mapping">Mapping</a>
+            <a href="#catalog">Catalog</a>
+        </div>
+        <a href="https://github.com/bhargavgandhi/agentic-workflows" class="cta-button">View on GitHub</a>
+    </nav>
+
+    <header>
+        <div class="hero-badge">Agentic Infrastructure</div>
+        <h1>Unified Context for <br> AI Agents.</h1>
+        <p>Scaffold project-agnostic rules, skills, and workflows across every major AI IDE with a single command.</p>
+        
+        <div class="terminal-container" onclick="copyCommand()">
+            <span class="terminal-prefix">$</span>
+            <span class="terminal-input" id="commandText">npx agents-skills</span>
+            <svg class="copy-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </div>
+    </header>
+
+    <section id="mapping" class="viz-section">
+        <div class="section-header">
+            <h2>One Source. All IDEs.</h2>
+            <p>We map your canonical .agents/ folder to the specific expectations of each tool.</p>
+        </div>
+
+        <div class="viz-container">
+            <svg class="stream-paths" viewBox="0 0 1200 400">
+                <path class="path-line" d="M600,200 L300,150"></path> <!-- VS Code -->
+                <path class="path-line" d="M600,200 L900,150"></path> <!-- Cursor -->
+                <path class="path-line" d="M600,200 L450,350"></path> <!-- Claude -->
+                <path class="path-line" d="M600,200 L750,350"></path> <!-- Antigravity -->
+            </svg>
+
+            <div class="center-node">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+
+            <div class="ide-node vscode">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="#007ACC"><path d="M23.513 18.558l-3.518-2.73 3.518-2.731V18.558zm-5.464-9.988l4.471 3.468-4.471 3.469V8.57zm-.001 0l-4.47 3.468 4.47 3.469V8.57zM1.487 18.558l3.518-2.73-3.518-2.731V18.558zm5.464-9.988l-4.471 3.468 4.471 3.469V8.57zm.001 0l4.47 3.468-4.47 3.469V8.57z"></path></svg>
+            </div>
+            <div class="ide-node cursor">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M13.23 20.35a6.03 6.03 0 0 1-2.46 0l-7.23-2.07a1.5 1.5 0 0 1-1.04-1.43v-9.7a1.5 1.5 0 0 1 1.04-1.43l7.23-2.07a6.03 6.03 0 0 1 2.46 0l7.23 2.07a1.5 1.5 0 0 1 1.04 1.43v9.7a1.5 1.5 0 0 1-1.04 1.43l-7.23 2.07z"></path></svg>
+            </div>
+            <div class="ide-node claude">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFB74D"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"></path></svg>
+            </div>
+            <div class="ide-node antigravity">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="#64B5F6"><path d="M5 3l7.5 15.5L20 3H5zm7.5 10.5L9 6h7l-3.5 7.5z"></path></svg>
+            </div>
+        </div>
+    </section>
+
+    <section id="catalog" class="grid-section">
+        <div class="section-header">
+            <h2>The Catalog</h2>
+            <p>Included rules, skills, and workflows—meticulously crafted.</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                </div>
+                <h3>Backend Engineering</h3>
+                <p>Node.js, MongoDB, TypeScript, and Microservice mastery in every rule.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2z"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <h3>Frontend Design</h3>
+                <p>Distinctive, premium UI design systems and interactive React patterns.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <h3>Security Hooks</h3>
+                <p>Pre-commit audits to prevent secret leaks and catch security flaws early.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <h3>Automated Testing</h3>
+                <p>Vitest, Playwright, and robust E2E strategies built for maintainability.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <h3>Error Handling</h3>
+                <p>Comprehensive standards for error propagation and developer logging.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </div>
+                <h3>Doc Co-authoring</h3>
+                <p>Workflow to refine high-quality documentation with AI collaboration.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="brand">agents-skills</div>
+        <div class="footer-links">
+            <a href="https://github.com/bhargavgandhi/agentic-workflows">GitHub</a>
+            <a href="https://www.npmjs.com/package/agents-skills">NPM</a>
+            <a href="https://github.com/bhargavgandhi/agentic-workflows/blob/main/LICENSE">License</a>
+        </div>
+        <div class="footer-credits">
+            Crafted for the future of AI-Assisted Engineering.
+        </div>
+    </footer>
+
+    <script>
+        function copyCommand() {
+            const command = document.getElementById('commandText').innerText;
+            navigator.clipboard.writeText(command).then(() => {
+                const badge = document.querySelector('.hero-badge');
+                const oldText = badge.innerText;
+                badge.innerText = 'Copied to clipboard!';
+                badge.style.background = 'rgba(46, 204, 113, 0.2)';
+                badge.style.color = '#2ecc71';
+                setTimeout(() => {
+                    badge.innerText = oldText;
+                    badge.style.background = 'rgba(142, 68, 173, 0.1)';
+                    badge.style.color = '#d28dfc';
+                }, 2000);
+            });
+        }
+
+        // Simple scroll reveal
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.9) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

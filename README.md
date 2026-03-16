@@ -2,6 +2,8 @@
 
 > **Cross-IDE agent scaffolding** — install AI rules, skills, workflows, and hooks into any workspace with a single command.
 
+[**View Landing Page**](https://bhargavgandhi.github.io/agentic-workflows/)
+
 ```bash
 npx agents-skills
 ```
