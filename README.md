@@ -82,6 +82,7 @@ The interactive CLI will ask you two questions:
 | `react-component-scaffolder/` | Boilerplate for strict React/Vite components                |
 | `code-reviewer/`              | Architectural flaws, tech debt, and standards review        |
 | `test-writing/`               | Vitest unit/integration tests and Playwright E2E tests      |
+| `playwright/`                 | Full Playwright E2E skill: selectors, POM, assertions, mocking, CI |
 | `frontend-design/`            | Production-grade UI/UX with premium design quality          |
 | `doc-coauthoring/`            | Structured documentation co-authoring workflow              |
 
