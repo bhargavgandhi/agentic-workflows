@@ -4,7 +4,7 @@
   "description": "Cross-IDE agent scaffolding: install rules, skills, workflows and hooks for Antigravity, VS Code, Cursor, and Claude Code",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bhargavgandhi/agentic-workflows.git"
+    "url": "git+https://github.com/bhargavgandhi/agentic-workflows.git"
   },
   "homepage": "https://bhargavgandhi.github.io/agentic-workflows/",
   "bugs": {
