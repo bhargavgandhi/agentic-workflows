@@ -29,13 +29,13 @@ async function smartCopy(src, dest, clack, label) {
     });
 
     if (clack.isCancel(action) || action === 'skip') {
-      clack.log.step(picocolors.dim(`   ⏭️  Skipped ${path.basename(dest)}`));
+      clack.log.info(picocolors.dim(`   ⏭️  Skipped ${path.basename(dest)}`));
       return;
     }
 
     if (action === 'overwrite') {
       fs.cpSync(src, dest, { force: true });
-      clack.log.step(picocolors.green(`   ✅ Overwritten: ${path.basename(dest)}`));
+      clack.log.info(picocolors.green(`   ✅ Overwritten: ${path.basename(dest)}`));
       return;
     }
 
@@ -48,7 +48,7 @@ async function smartCopy(src, dest, clack, label) {
         newDest = dest.replace(/(\.[\w\d]+)$/, `${suffix}${count}$1`);
       }
       fs.cpSync(src, newDest);
-      clack.log.step(picocolors.cyan(`   📂 Created: ${path.basename(newDest)}`));
+      clack.log.info(picocolors.cyan(`   📂 Created: ${path.basename(newDest)}`));
       return;
     }
 
@@ -56,7 +56,7 @@ async function smartCopy(src, dest, clack, label) {
       if (dest.endsWith('.md')) {
         const srcContent = fs.readFileSync(src, 'utf8');
         fs.appendFileSync(dest, `\n\n${srcContent}`);
-        clack.log.step(picocolors.blue(`   Merged: ${path.basename(dest)}`));
+        clack.log.info(picocolors.blue(`   Merged: ${path.basename(dest)}`));
       } else {
         clack.log.warn(`Merge not supported for non-markdown files. Skipping.`);
       }
@@ -100,7 +100,7 @@ function backupIfExists(targetDir, label) {
     
     if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true });
     fs.cpSync(targetDir, backupDir, { recursive: true });
-    clack.log.step(picocolors.yellow(`   🔄 Safety Backup created: ${backupDir}`));
+    clack.log.info(picocolors.yellow(`   🔄 Safety Backup created: ${backupDir}`));
   }
 }
 
