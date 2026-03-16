@@ -48,13 +48,13 @@ The interactive CLI will ask you two questions:
 
 ## IDE Output Mapping
 
-| Source (`.agents/`) | Antigravity | VS Code / Copilot | Cursor | Claude Code |
-|---|---|---|---|---|
-| `rules/project_standards.md` | `.agents/rules/project_standards.md` | `.github/copilot-instructions.md` | `.cursorrules` | `CLAUDE.md` |
-| `rules/*.md` (rest) | `.agents/rules/` | `.github/rules/` | `.cursor/rules/*.mdc` | `.claude/rules/` |
-| `skills/` | `.agents/skills/` | `.github/agents/skills/` | `.cursor/agents/skills/` | `.claude/skills/` |
-| `workflows/` | `.agents/workflows/` | `.github/agents/workflows/` | `.cursor/agents/workflows/` | `.claude/agents/` |
-| `hooks/` | `.agents/hooks/` | `.github/hooks/` | `.cursor/rules/*.mdc` (alwaysApply) | `.claude/hooks/` |
+| Source (`.agents/`)          | Antigravity                          | VS Code / Copilot                 | Cursor                              | Claude Code       |
+| ---------------------------- | ------------------------------------ | --------------------------------- | ----------------------------------- | ----------------- |
+| `rules/project_standards.md` | `.agents/rules/project_standards.md` | `.github/copilot-instructions.md` | `.cursorrules`                      | `CLAUDE.md`       |
+| `rules/*.md` (rest)          | `.agents/rules/`                     | `.github/rules/`                  | `.cursor/rules/*.mdc`               | `.claude/rules/`  |
+| `skills/`                    | `.agents/skills/`                    | `.github/agents/skills/`          | `.cursor/agents/skills/`            | `.claude/skills/` |
+| `workflows/`                 | `.agents/workflows/`                 | `.github/agents/workflows/`       | `.cursor/agents/workflows/`         | `.claude/agents/` |
+| `hooks/`                     | `.agents/hooks/`                     | `.github/hooks/`                  | `.cursor/rules/*.mdc` (alwaysApply) | `.claude/hooks/`  |
 
 > **Cursor note:** Rules are converted from `.md` to `.mdc` format with the `alwaysApply`, `description`, and `globs` frontmatter fields required by Cursor.
 
@@ -63,43 +63,47 @@ The interactive CLI will ask you two questions:
 ## Included Content
 
 ### Rules (`rules/`)
-| File | Description |
-|---|---|
-| `project_standards.md` | Universal AI behavior guidelines (becomes the primary system prompt) |
-| `nodejs-standards.md` | Node.js architecture, security, and performance standards |
-| `code_quality.md` | DRY, SOLID, naming, and error handling standards |
-| `workflow_protocols.md` | Research -> Plan -> Execute -> Verify lifecycle protocols |
+
+| File                    | Description                                                          |
+| ----------------------- | -------------------------------------------------------------------- |
+| `project_standards.md`  | Universal AI behavior guidelines (becomes the primary system prompt) |
+| `nodejs-standards.md`   | Node.js architecture, security, and performance standards            |
+| `code_quality.md`       | DRY, SOLID, naming, and error handling standards                     |
+| `workflow_protocols.md` | Research -> Plan -> Execute -> Verify lifecycle protocols            |
 
 ### Skills (`skills/`)
-| Folder | Description |
-|---|---|
-| `backend-engineer/` | Node.js, TypeScript, MongoDB, REST APIs, Microservices |
-| `graphql-backend/` | Apollo Server, DataLoaders, schema design, N+1 prevention |
-| `graphql-frontend/` | Apollo Client, fragments, cache management, code generation |
-| `api-integration/` | Frontend ↔ Redux/Firebase endpoint connection patterns |
-| `react-component-scaffolder/` | Boilerplate for strict React/Vite components |
-| `code-reviewer/` | Architectural flaws, tech debt, and standards review |
-| `test-writing/` | Vitest unit/integration tests and Playwright E2E tests |
-| `frontend-design/` | Production-grade UI/UX with premium design quality |
-| `doc-coauthoring/` | Structured documentation co-authoring workflow |
+
+| Folder                        | Description                                                 |
+| ----------------------------- | ----------------------------------------------------------- |
+| `backend-engineer/`           | Node.js, TypeScript, MongoDB, REST APIs, Microservices      |
+| `graphql-backend/`            | Apollo Server, DataLoaders, schema design, N+1 prevention   |
+| `graphql-frontend/`           | Apollo Client, fragments, cache management, code generation |
+| `api-integration/`            | Frontend ↔ Redux/Firebase endpoint connection patterns      |
+| `react-component-scaffolder/` | Boilerplate for strict React/Vite components                |
+| `code-reviewer/`              | Architectural flaws, tech debt, and standards review        |
+| `test-writing/`               | Vitest unit/integration tests and Playwright E2E tests      |
+| `frontend-design/`            | Production-grade UI/UX with premium design quality          |
+| `doc-coauthoring/`            | Structured documentation co-authoring workflow              |
 
 ### Workflows (`workflows/`)
-| File | Description |
-|---|---|
-| `feature_lifecycle.md` | End-to-end feature build and ship orchestration |
-| `code_review.md` | Systematic PR-style code review |
-| `debugging_agent.md` | Root cause analysis and bug hunting |
-| `refactor.md` | Safe, behavior-preserving refactoring |
-| `interactive_plan.md` | Interactive multi-round requirement gathering session |
-| `plan.md` | Deep reasoning technical implementation planning template |
-| `frontend-module.md` | Strategic frontend module creation |
-| `post_pr_review.md` | Post-review GitHub PR inline comment posting |
+
+| File                   | Description                                               |
+| ---------------------- | --------------------------------------------------------- |
+| `feature_lifecycle.md` | End-to-end feature build and ship orchestration           |
+| `code_review.md`       | Systematic PR-style code review                           |
+| `debugging_agent.md`   | Root cause analysis and bug hunting                       |
+| `refactor.md`          | Safe, behavior-preserving refactoring                     |
+| `interactive_plan.md`  | Interactive multi-round requirement gathering session     |
+| `plan.md`              | Deep reasoning technical implementation planning template |
+| `frontend-module.md`   | Strategic frontend module creation                        |
+| `post_pr_review.md`    | Post-review GitHub PR inline comment posting              |
 
 ### Hooks (`hooks/`)
-| File | Description |
-|---|---|
-| `pre-commit.md` | AI-powered security and standards audit before commits |
-| `post-push.md` | PR description drafting and documentation gap detection |
+
+| File            | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| `pre-commit.md` | AI-powered security and standards audit before commits  |
+| `post-push.md`  | PR description drafting and documentation gap detection |
 
 ---
 
@@ -109,7 +113,6 @@ This repository comes with built-in hooks to ensure code quality:
 
 - **Code Review**: Run `npm run code-review` to scan your staged changes for TODOs, console logs, and legacy references.
 - **Pre-commit**: Automatically runs syntax checks and validation before every commit.
-- **Setup Hooks**: Hooks are automatically configured on `npm install`, but you can manually trigger it with `npm run setup-hooks`.
 
 ## Project Structure
 

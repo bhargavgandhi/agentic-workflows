@@ -21,8 +21,7 @@
   "scripts": {
     "start": "node ./bin/cli.js",
     "code-review": "./hooks/code-review.sh",
-    "setup-hooks": "git config core.hooksPath hooks",
-    "postinstall": "npm run setup-hooks",
+    "setup:hooks": "git config core.hooksPath hooks",
     "version:patch": "npm version patch",
     "publish": "npm publish --access public"
   },
