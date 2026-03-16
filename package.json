@@ -2,8 +2,16 @@
   "name": "agents-skills",
   "version": "1.0.0",
   "description": "Cross-IDE agent scaffolding: install rules, skills, workflows and hooks for Antigravity, VS Code, Cursor, and Claude Code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bhargavgandhi/agentic-workflows.git"
+  },
+  "homepage": "https://github.com/bhargavgandhi/agentic-workflows#readme",
+  "bugs": {
+    "url": "https://github.com/bhargavgandhi/agentic-workflows/issues"
+  },
   "bin": {
-    "agents-skills": "./bin/cli.js"
+    "agents-skills": "bin/cli.js"
   },
   "files": [
     "bin/",
@@ -17,9 +25,15 @@
     "agent",
     "ai",
     "rules",
-    "skills"
+    "skills",
+    "cursor",
+    "copilot",
+    "claude",
+    "antigravity",
+    "workflow",
+    "scaffolding"
   ],
-  "author": "",
+  "author": "Bhargav Gandhi",
   "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^1.1.0",
