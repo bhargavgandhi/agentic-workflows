@@ -1,6 +1,9 @@
 ---
 name: doc-coauthoring
 description: Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc works for readers. Trigger when user mentions writing docs, creating proposals, drafting specs, or similar documentation tasks.
+metadata:
+  pattern: pipeline
+  steps: "3"
 ---
 
 # Doc Co-Authoring Workflow
@@ -28,6 +31,7 @@ If user declines, work freeform. If user accepts, proceed to Stage 1.
 
 ## Stage 1: Context Gathering
 
+**Gate Condition:** DO NOT proceed to Stage 2 until the user has provided sufficient context and answered clarifying questions.
 **Goal:** Close the gap between what the user knows and what Claude knows, enabling smart guidance later.
 
 ### Initial Questions
@@ -108,6 +112,7 @@ If user wants to add more, let them. When ready, proceed to Stage 2.
 
 ## Stage 2: Refinement & Structure
 
+**Gate Condition:** DO NOT proceed to Stage 3 until the document is structurally complete and the user approves the draft.
 **Goal:** Build the document section by section through brainstorming, curation, and iterative refinement.
 
 **Instructions to user:**
@@ -251,6 +256,7 @@ Ask if ready to move to Reader Testing, or if they want to refine anything else.
 
 ## Stage 3: Reader Testing
 
+**Gate Condition:** DO NOT mark the task complete until the user has verified the document passes reader testing.
 **Goal:** Test the document with a fresh Claude (no context bleed) to verify it works for readers.
 
 **Instructions to user:**

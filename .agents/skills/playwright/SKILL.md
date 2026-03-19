@@ -1,6 +1,8 @@
 ---
-name: Playwright E2E Engineer
+name: playwright
 description: Write, run, and debug end-to-end tests using Playwright. Covers test structure, selectors, POM, async handling, network mocking, and CI/CD integration.
+metadata:
+  pattern: pipeline
 ---
 
 # Playwright E2E Skill
@@ -113,6 +115,8 @@ await row.getByRole('button', { name: 'Edit' }).click();
 await page.locator('li').nth(2).click();
 ```
 
+**Selector priority**: Primary: `getByRole`. Secondary: `getByLabel`, `getByText`, `getByTestId`. Fallback: `page.locator('css-selector')`.
+
 ---
 
 ## 4. Page Object Model (POM)
@@ -157,6 +161,8 @@ test('login flow', async ({ page }) => {
   await expect(page).toHaveURL('/dashboard');
 });
 ```
+
+**POM best practices**: Encapsulate locators in the constructor. Add helper action methods for complex interactions. Keep assertions in the test `.spec.ts` — POMs should be purely action-oriented and reusable.
 
 ---
 
@@ -256,14 +262,16 @@ test.use({ storageState: '.auth/user.json' });
 
 ## 9. Workflow Rules
 
-1. **Detect first**: When testing localhost, **always** check which port the dev server is running on before writing test code.
+**Gate Condition:** You must follow these sequentially. DO NOT bypass them.
+
+1. **Detect first**: When testing localhost, **always** check which port the dev server is running on before writing test code. DO NOT proceed until you verified the port.
 2. **Visible browser**: Always use `headless: false` during development for visibility. Only use `headless: true` in CI.
 3. **Placement**: Put all Playwright tests in `tests/e2e/`. Use `.spec.ts` extension.
 4. **Isolation**: Each test must be independent. Never share state between tests.
 5. **Use POM**: For any non-trivial flow with more than 2–3 interactions, use a Page Object.
 6. **Selectors**: Prefer `getByRole` and `getByLabel`. Only use `data-testid` as a fallback.
 7. **No `waitForTimeout`**: Never use `page.waitForTimeout()`. Always wait for a specific state or response.
-8. **Run & Validate**: Always run the specific test after writing it: `npx playwright test <file> --headed`. Fix any failures before moving on.
+8. **Run & Validate**: Always run the specific test after writing it: `npx playwright test <file> --headed`. Fix any failures before moving on. DO NOT mark task complete until it passes.
 9. **Debugging**: Use `npx playwright test --debug` or `await page.pause()` for interactive debugging.
 
 ---
