@@ -1,6 +1,6 @@
 {
   "name": "agents-skills",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Cross-IDE agent scaffolding: install rules, skills, workflows and hooks for Antigravity, VS Code, Cursor, and Claude Code",
   "repository": {
     "type": "git",
