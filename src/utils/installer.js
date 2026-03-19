@@ -92,7 +92,7 @@ async function smartCopyFolder(srcDir, destDir, clack, label) {
 /**
  * Creates a backup of a directory before installation.
  */
-function backupIfExists(targetDir, label) {
+function backupIfExists(targetDir, label, clack) {
   if (fs.existsSync(targetDir)) {
     const parent = path.dirname(targetDir);
     const folderName = path.basename(targetDir);
@@ -100,7 +100,12 @@ function backupIfExists(targetDir, label) {
     
     if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true });
     fs.cpSync(targetDir, backupDir, { recursive: true });
-    clack.log.info(picocolors.yellow(`   🔄 Safety Backup created: ${backupDir}`));
+    const msg = picocolors.yellow(`   🔄 Safety Backup created: ${backupDir}`);
+    if (clack) {
+      clack.log.info(msg);
+    } else {
+      console.log(msg);
+    }
   }
 }
 

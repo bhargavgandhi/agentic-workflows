@@ -33,7 +33,7 @@ class AntigravityAdapter extends IDEAdapter {
       
       // Safety Backup
       const { backupIfExists } = require('../utils/installer');
-      backupIfExists(geminiDir, 'Global Gemini');
+      backupIfExists(geminiDir, 'Global Gemini', clack);
       
       ensureDir(antigravityDir);
 

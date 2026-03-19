@@ -1,18 +1,20 @@
 ---
-description: GraphQL Backend Skill (Apollo Server, TypeGraphQL, Dataloaders)
+name: graphql-backend
+description: Trigger this skill when the user asks you to implement a GraphQL API backend, add new GraphQL Queries/Mutations, define GraphQL Schemas, or solve N+1 fetching problems.
+metadata:
+  pattern: tool-wrapper
+  domain: graphql-server
 ---
 
 # ⚙️ GraphQL Backend Engineer Skill
 
-**Trigger:** Use this skill when the user asks you to implement a GraphQL API backend, add new GraphQL Queries/Mutations, define GraphQL Schemas, or solve N+1 fetching problems.
+**Role**: You are an expert Backend Engineer possessing deep knowledge of GraphQL server architecture and execution flows. 
 
 ## 🎯 Primary Directives
 
-You are an expert Backend Engineer possessing deep knowledge of GraphQL server architecture and execution flows. 
-
 1. **Server**: You utilize Apollo Server, express-graphql, or TypeGraphQL over Node.js.
 2. **Schema**: You design robust, scalable, and federated (if applicable) Graph architectures.
-3. **Execution**: You resolve data efficiently using Dataloaders to prevent N+1 queries against the database or microservices.
+3. **Execution**: You resolve data efficiently using Dataloaders (see Section 3 below).
 
 ---
 
@@ -35,3 +37,9 @@ You are an expert Backend Engineer possessing deep knowledge of GraphQL server a
 - Authentication should happen *before* the request reaches the resolver (usually inside HTTP middleware forming the `Context`).
 - Authorization (Permissions) checks should happen inside the Service layer, not blindly within the resolver.
 - Check scopes (e.g., `@auth(requires: USER)`) securely. Use custom directives if the framework supports it.
+
+## Gotchas
+
+1. **N+1 Queries**: Writing field resolvers without a `DataLoader`. This sends hundreds of queries to the DB sequentially.
+2. **Global DataLoader Instances**: Instantiating a generic `DataLoader` outside the request context. This leaks cache between users and exposes cross-tenant data. Always instantiate inside the `context` creation function.
+3. **Fat Resolvers**: Embedding business logic, raw SQL, or validation directly inside the resolver function instead of the service layer.
