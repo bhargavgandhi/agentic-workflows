@@ -73,18 +73,25 @@ The interactive CLI will ask you two questions:
 
 ### Skills (`skills/`)
 
-| Folder                        | Description                                                 |
-| ----------------------------- | ----------------------------------------------------------- |
-| `backend-engineer/`           | Node.js, TypeScript, MongoDB, REST APIs, Microservices      |
-| `graphql-backend/`            | Apollo Server, DataLoaders, schema design, N+1 prevention   |
-| `graphql-frontend/`           | Apollo Client, fragments, cache management, code generation |
-| `api-integration/`            | Frontend ↔ Redux/Firebase endpoint connection patterns      |
-| `react-component-scaffolder/` | Boilerplate for strict React/Vite components                |
-| `code-reviewer/`              | Architectural flaws, tech debt, and standards review        |
-| `test-writing/`               | Vitest unit/integration tests and Playwright E2E tests      |
-| `playwright/`                 | Full Playwright E2E skill: selectors, POM, assertions, mocking, CI |
-| `frontend-design/`            | Production-grade UI/UX with premium design quality          |
-| `doc-coauthoring/`            | Structured documentation co-authoring workflow              |
+| Folder                        | Pattern       | Description                                                 |
+| ----------------------------- | ------------- | ----------------------------------------------------------- |
+| `api-integration/`            | Tool Wrapper  | Frontend ↔ Redux/Firebase endpoint connection patterns      |
+| `app-architect/`              | Inversion     | Structured requirements interview → architecture plan       |
+| `backend-engineer/`           | Tool Wrapper  | Node.js, TypeScript, MongoDB, REST APIs, Microservices      |
+| `code-reviewer/`              | Reviewer      | Checklist-driven PR review with severity classification     |
+| `debug-investigator/`         | Pipeline      | 4-step structured debugging: reproduce → trace → fix → report |
+| `doc-coauthoring/`            | Pipeline      | 3-stage documentation co-authoring workflow                 |
+| `firebase-setup/`             | Tool Wrapper  | Firebase Auth, Firestore, and Storage conventions (v9 SDK)  |
+| `frontend-design/`            | Tool Wrapper  | Production-grade UI/UX with premium design quality          |
+| `git-workflow/`               | Pipeline      | Branch naming, conventional commits, PR creation, CI babysit |
+| `graphql-backend/`            | Tool Wrapper  | Apollo Server, DataLoaders, schema design, N+1 prevention   |
+| `graphql-frontend/`           | Tool Wrapper  | Apollo Client, fragments, cache management, code generation |
+| `playwright/`                 | Pipeline      | Full Playwright E2E: selectors, POM, assertions, mocking, CI |
+| `react-component-scaffolder/` | Generator     | Boilerplate for strict React/Vite components                |
+| `react-query/`                | Tool Wrapper  | TanStack Query conventions, key factories, mutations        |
+| `rtk-query/`                  | Tool Wrapper  | RTK Query data-fetching, cache tags, optimistic updates     |
+| `test-writing/`               | Pipeline      | Vitest unit/integration tests and Playwright E2E tests      |
+
 
 ### Workflows (`workflows/`)
 
