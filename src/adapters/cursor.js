@@ -77,6 +77,12 @@ class CursorAdapter extends IDEAdapter {
       }
     }
   }
+
+  async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
+    const { clack } = options;
+    const dest = path.join(baseDir, '.cursor', 'skills', skillName);
+    await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
 }
 
 /**

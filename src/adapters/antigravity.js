@@ -69,6 +69,17 @@ class AntigravityAdapter extends IDEAdapter {
       }
     }
   }
+
+  async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
+    const { clack } = options;
+    let dest;
+    if (scope === 'global') {
+      dest = path.join(os.homedir(), '.gemini', 'antigravity', 'skills', skillName);
+    } else {
+      dest = path.join(baseDir, '.agents', 'skills', skillName);
+    }
+    await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
 }
 
 module.exports = { AntigravityAdapter };

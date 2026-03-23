@@ -31,20 +31,52 @@ npx agents-skills
 ## Quick Start
 
 ```bash
-# In your project directory
+# Install all agent files into your project
 npx agents-skills
 
-# Or install globally and run anywhere
+# Install a single skill (IDE-aware)
+npx agents-skills add <skill-name>
+
+# Or install globally
 npm install -g agents-skills
 agents-skills
 ```
 
-The interactive CLI will ask you two questions:
+The interactive CLI will ask you:
 
 1. **Where?** — Local workspace (current directory) or Global (your home directory)
 2. **Which IDE(s)?** — Pick one or more from the list
 
 ---
+
+## Install a Single Skill
+
+Use the `add` subcommand to install one specific skill without the full setup wizard:
+
+```bash
+# See all available skills
+npx agents-skills add
+
+# Install a specific skill
+npx agents-skills add react-query
+npx agents-skills add frontend-design
+npx agents-skills add debug-investigator
+```
+
+The CLI will ask:
+1. **Scope** — Local workspace or Global
+2. **Which IDE(s)** — Multiselect from auto-detected IDEs in your workspace
+
+Each IDE receives the skill in its canonical location:
+
+| IDE | Skill destination |
+| --- | --- |
+| Antigravity (local) | `.agents/skills/<name>/` |
+| Antigravity (global) | `~/.gemini/antigravity/skills/<name>/` |
+| VS Code / Copilot | `.github/skills/<name>/` |
+| Cursor | `.cursor/skills/<name>/` |
+| Claude Code | `.claude/skills/<name>/` |
+
 
 ## IDE Output Mapping
 
@@ -94,19 +126,14 @@ The interactive CLI will ask you two questions:
 | `rtk-query/`                  | Tool Wrapper  | RTK Query data-fetching, cache tags, optimistic updates     |
 | `skill-creator/`              | Inversion     | Interview wizard that generates new skills from patterns     |
 | `test-writing/`               | Pipeline      | Vitest unit/integration tests and Playwright E2E tests      |
+| `post-pr-review/`             | Tool Wrapper  | Post code review feedback as inline comments to a GitHub PR |
 
 ### Workflows (`workflows/`)
 
-| File                   | Description                                               |
-| ---------------------- | --------------------------------------------------------- |
-| `feature_lifecycle.md` | End-to-end feature build and ship orchestration           |
-| `code_review.md`       | Systematic PR-style code review                           |
-| `debugging_agent.md`   | Root cause analysis and bug hunting                       |
-| `refactor.md`          | Safe, behavior-preserving refactoring                     |
-| `interactive_plan.md`  | Interactive multi-round requirement gathering session     |
-| `plan.md`              | Deep reasoning technical implementation planning template |
-| `frontend-module.md`   | Strategic frontend module creation                        |
-| `post_pr_review.md`    | Post-review GitHub PR inline comment posting              |
+| File                     | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `build_feature_agent.md` | End-to-end orchestration: discover → plan → build → ship |
+| `refactor_agent.md`      | Safe, behavior-preserving refactoring pipeline          |
 
 ### Hooks (`hooks/`)
 
