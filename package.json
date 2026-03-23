@@ -16,14 +16,17 @@
   "files": [
     "bin/",
     "src/",
-    ".agents/"
+    ".agents/",
+    "skills/",
+    "skills.json"
   ],
   "scripts": {
     "start": "node ./bin/cli.js",
     "code-review": "./hooks/code-review.sh",
     "setup:hooks": "git config core.hooksPath hooks",
     "version:patch": "npm version patch",
-    "publish:package": "npm publish --access public"
+    "publish:package": "npm publish --access public",
+    "prepublishOnly": "rm -rf skills && cp -r .agents/skills skills"
   },
   "keywords": [
     "agent",
