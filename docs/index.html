@@ -375,6 +375,102 @@
             .claude { transform: translate(-80px, 120px); }
             .antigravity { transform: translate(80px, 120px); }
         }
+
+        /* Clickable catalog cards */
+        .card { cursor: pointer; }
+        .card .card-arrow {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .card:hover .card-arrow { opacity: 1; }
+
+        /* IDE node labels */
+        .ide-node-wrap {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .ide-node-wrap .ide-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .ide-node-wrap.vscode { transform: translate(-300px, -50px); }
+        .ide-node-wrap.cursor { transform: translate(300px, -50px); }
+        .ide-node-wrap.claude { transform: translate(-150px, 150px); }
+        .ide-node-wrap.antigravity { transform: translate(150px, 150px); }
+
+        /* Skill Drawer */
+        .drawer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .drawer-overlay.open { opacity: 1; pointer-events: all; }
+        .drawer {
+            position: fixed; top: 0; right: 0;
+            width: min(520px, 92vw); height: 100vh;
+            background: #0e0e0e;
+            border-left: 1px solid var(--glass-border);
+            z-index: 2001;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+            overflow-y: auto;
+            padding: 40px 36px;
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-close {
+            position: absolute; top: 20px; right: 24px;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 1.4rem;
+            transition: color 0.2s;
+        }
+        .drawer-close:hover { color: #fff; }
+        .drawer-pattern-badge {
+            display: inline-block;
+            padding: 4px 12px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            background: rgba(142,68,173,0.15);
+            border: 1px solid rgba(142,68,173,0.3);
+            color: #d28dfc;
+            margin-bottom: 20px;
+        }
+        .drawer h2 { font-size: 1.8rem; margin-bottom: 8px; }
+        .drawer-desc { color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
+        .drawer-section { margin-bottom: 24px; }
+        .drawer-section h4 {
+            font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted);
+            margin-bottom: 12px; font-weight: 600;
+        }
+        .drawer-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            padding: 4px 12px; border-radius: 8px;
+            font-size: 0.8rem; margin: 4px 4px 4px 0;
+            color: #e2e8f0;
+        }
+        .drawer-install {
+            background: #0a0a0a;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 16px 20px;
+            font-family: monospace; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .drawer-install:hover { border-color: var(--accent-primary); }
+        .drawer-install span { color: #a78bfa; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -383,6 +479,7 @@
     <nav>
         <div class="brand">agents-skills</div>
         <div class="nav-links">
+            <a href="#install">Install</a>
             <a href="#features">Features</a>
             <a href="#mapping">Mapping</a>
             <a href="#catalog">Catalog</a>
@@ -395,12 +492,70 @@
         <h1>Unified Context for <br> AI Agents.</h1>
         <p>Scaffold project-agnostic rules, skills, and workflows across every major AI IDE with a single command.</p>
         
-        <div class="terminal-container" onclick="copyCommand()">
+        <div class="terminal-container" onclick="copyCommand('commandText')">
             <span class="terminal-prefix">$</span>
             <span class="terminal-input" id="commandText">npx agents-skills</span>
             <svg class="copy-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         </div>
+        <p style="margin-top:16px; font-size:0.85rem; color: var(--text-muted);">or install a single skill →</p>
+        <div class="terminal-container" onclick="copyCommand('commandTextAdd')" style="margin-top:12px;">
+            <span class="terminal-prefix">$</span>
+            <span class="terminal-input" id="commandTextAdd">npx agents-skills add react-query</span>
+            <svg class="copy-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </div>
     </header>
+
+    <!-- Full Install Section -->
+    <section class="grid-section" style="padding-top:0;">
+        <div class="section-header">
+            <h2>Full Setup</h2>
+            <p>One command installs all skills, workflows, and hooks into your chosen IDEs.</p>
+        </div>
+        <div style="background: #0a0a0a; border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px; max-width: 700px; margin: 0 auto;">
+            <div style="font-family: monospace; font-size:0.95rem; line-height:2.2;">
+                <div><span style="color:#a78bfa;">$</span> <span style="color:#e2e8f0;">npx agents-skills</span></div>
+                <div style="color:var(--text-muted); padding-left: 1rem;">┌  🤖 Skill Installer</div>
+                <div style="color:var(--text-muted); padding-left: 1rem;">◇  Install where?</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">▸ Local Workspace</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">  Global (~/.config)</div>
+                <div style="color:var(--text-muted); padding-left: 1rem;">◇  Which IDEs should receive agent files?</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">✔ Antigravity</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">✔ VS Code / GitHub Copilot</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">  Cursor</div>
+                <div style="color:#e2e8f0; padding-left: 2rem;">  Claude Code</div>
+                <div style="color:#4ade80; padding-left: 1rem;">└  ✅ All done!</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Install a Single Skill Section -->
+    <section id="install" class="grid-section" style="padding-top:0;">
+        <div class="section-header">
+            <h2>Install a Single Skill</h2>
+            <p>Pick only what you need. The CLI detects your IDEs and copies to the right place.</p>
+        </div>
+        <div style="background: #0a0a0a; border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px; max-width: 700px; margin: 0 auto;">
+            <div style="font-family: monospace; font-size:0.95rem; line-height:2;">
+                <div><span style="color:#a78bfa;">$</span> <span style="color:#e2e8f0;">npx agents-skills add react-query</span></div>
+                <div style="color:var(--text-muted); padding-left: 1rem;">◇ Install where? → Local Workspace</div>
+                <div style="color:var(--text-muted); padding-left: 1rem;">◇ Which IDEs? → Antigravity, Cursor</div>
+                <div style="color:#4ade80; padding-left: 1rem;">✅ Skill "react-query" installed into: Antigravity, Cursor</div>
+            </div>
+            <div style="margin-top: 32px; border-top: 1px solid var(--glass-border); padding-top: 28px;">
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px;">IDE destination paths</p>
+                <table style="width:100%; border-collapse:collapse; font-size:0.875rem;">
+                    <tr style="color:var(--text-muted);">
+                        <th style="text-align:left; padding:8px 0; font-weight:500;">IDE</th>
+                        <th style="text-align:left; padding:8px 0; font-weight:500;">Skills path</th>
+                    </tr>
+                    <tr><td style="padding:8px 0; color:#e2e8f0;">Antigravity</td><td style="padding:8px 0; font-family:monospace; color:#a78bfa;">.agents/skills/&lt;name&gt;/</td></tr>
+                    <tr><td style="padding:8px 0; color:#e2e8f0;">VS Code / Copilot</td><td style="padding:8px 0; font-family:monospace; color:#a78bfa;">.github/skills/&lt;name&gt;/</td></tr>
+                    <tr><td style="padding:8px 0; color:#e2e8f0;">Cursor</td><td style="padding:8px 0; font-family:monospace; color:#a78bfa;">.cursor/skills/&lt;name&gt;/</td></tr>
+                    <tr><td style="padding:8px 0; color:#e2e8f0;">Claude Code</td><td style="padding:8px 0; font-family:monospace; color:#a78bfa;">.claude/skills/&lt;name&gt;/</td></tr>
+                </table>
+            </div>
+        </div>
+    </section>
 
     <section id="mapping" class="viz-section">
         <div class="section-header">
@@ -420,17 +575,33 @@
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
             </div>
 
-            <div class="ide-node vscode">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="#007ACC"><path d="M23.513 18.558l-3.518-2.73 3.518-2.731V18.558zm-5.464-9.988l4.471 3.468-4.471 3.469V8.57zm-.001 0l-4.47 3.468 4.47 3.469V8.57zM1.487 18.558l3.518-2.73-3.518-2.731V18.558zm5.464-9.988l-4.471 3.468 4.471 3.469V8.57zm.001 0l4.47 3.468-4.47 3.469V8.57z"></path></svg>
+            <!-- VS Code -->
+            <div class="ide-node-wrap vscode">
+                <div class="ide-node">
+                    <!-- VS Code official logo -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/1280px-Visual_Studio_Code_1.35_icon.svg.png?_=20210804221519" alt="VS Code" style="width:32px; height:32px; border-radius: 8px;">
+                </div>
             </div>
-            <div class="ide-node cursor">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M13.23 20.35a6.03 6.03 0 0 1-2.46 0l-7.23-2.07a1.5 1.5 0 0 1-1.04-1.43v-9.7a1.5 1.5 0 0 1 1.04-1.43l7.23-2.07a6.03 6.03 0 0 1 2.46 0l7.23 2.07a1.5 1.5 0 0 1 1.04 1.43v9.7a1.5 1.5 0 0 1-1.04 1.43l-7.23 2.07z"></path></svg>
+            <!-- Cursor -->
+            <div class="ide-node-wrap cursor">
+                <div class="ide-node">
+                    <!-- Cursor: black bg with white chevron/cursor mark -->
+                    <img src="https://cursor.com/marketing-static/icon-512x512.png" alt="Cursor" style="width:32px; height:32px; border-radius: 8px;">
+                </div>
             </div>
-            <div class="ide-node claude">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFB74D"><path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z"></path></svg>
+            <!-- Claude Code -->
+            <div class="ide-node-wrap claude">
+                <div class="ide-node">
+                    <!-- Anthropic/Claude logo - abstract A shape -->
+                    <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/claude-ai-icon.png" alt="Claude Code" style="width:32px; height:32px; border-radius: 8px;">
+                </div>
             </div>
-            <div class="ide-node antigravity">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="#64B5F6"><path d="M5 3l7.5 15.5L20 3H5zm7.5 10.5L9 6h7l-3.5 7.5z"></path></svg>
+            <!-- Antigravity -->
+            <div class="ide-node-wrap antigravity">
+                <div class="ide-node">
+                    <!-- Antigravity - stylized AG -->
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvinjxr8MVZ69diNIbNNMfcUljy04dIjkqPQ&s" alt="Antigravity" style="width:32px; height:32px; border-radius: 8px;">
+                </div>
             </div>
         </div>
     </section>
@@ -441,111 +612,133 @@
             <p>Included rules, skills, and workflows—meticulously crafted.</p>
         </div>
 
+        <p style="color:var(--text-muted); margin-bottom: 40px;">Click any skill to see details and the install command.</p>
         <div class="card-grid">
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('backend-engineer')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>
                 <h3>Backend Engineering</h3>
-                <p>Node.js, MongoDB, TypeScript, and Microservice mastery in every rule.</p>
+                <p>Node.js, MongoDB, TypeScript, and Microservice patterns.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2z"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                </div>
+            <div class="card" onclick="openSkill('frontend-design')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2z"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div>
                 <h3>Frontend Design</h3>
                 <p>Distinctive, premium UI design systems and interactive React patterns.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                </div>
-                <h3>Safety & Backups</h3>
-                <p>Automatic backups and interactive conflict resolution protect your workspace.</p>
-            </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('firebase-setup')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
                 <h3>Firebase Setup</h3>
                 <p>Auth, Firestore, and Storage conventions using the modular v9 SDK.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('app-architect')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
                 <h3>App Architect</h3>
                 <p>Structured requirements interview that produces a full architecture plan.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                </div>
-                <h3>Workflow Protocols</h3>
-                <p>Standardized Research -> Plan -> Execute workflows for consistent delivery.</p>
+            <div class="card" onclick="openSkill('build_feature_agent')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+                <h3>Build Feature Agent</h3>
+                <p>Standardized Research → Plan → Execute workflow for consistent delivery.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                </div>
-                <h3>Automated Testing</h3>
-                <p>Vitest, Playwright, and robust E2E strategies built for maintainability.</p>
+            <div class="card" onclick="openSkill('test-writing')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                <h3>Test Writing</h3>
+                <p>Vitest unit tests and Playwright E2E — pipeline with gate conditions.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                </div>
-                <h3>RTK Query & React Query</h3>
-                <p>Data-fetching patterns, cache invalidation, and optimistic updates.</p>
+            <div class="card" onclick="openSkill('react-query')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
+                <h3>React Query</h3>
+                <p>TanStack Query v5 conventions, key factories, mutations, and gotchas.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                </div>
+            <div class="card" onclick="openSkill('rtk-query')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
+                <h3>RTK Query</h3>
+                <p>Redux Toolkit data-fetching, cache tags, and optimistic updates.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('debug-investigator')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
                 <h3>Debug Investigator</h3>
-                <p>4-step pipeline: reproduce, trace root cause, propose fix, generate report.</p>
+                <p>Symptom → root cause pipeline. 5-Whys method, structured investigation.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg>
-                </div>
+            <div class="card" onclick="openSkill('git-workflow')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg></div>
                 <h3>Git Workflow</h3>
                 <p>Conventional commits, branch naming, PR creation, and CI babysitting.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('doc-coauthoring')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>
                 <h3>Doc Co-authoring</h3>
-                <p>Workflow to refine high-quality documentation with AI collaboration.</p>
+                <p>3-stage guided workflow: context → draft → reader testing.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                </div>
-                <h3>Code Review</h3>
+            <div class="card" onclick="openSkill('code-reviewer')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></div>
+                <h3>Code Reviewer</h3>
                 <p>Checklist-driven PR review with blocking, suggestion, and approval tiers.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('payload-cms')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></div>
                 <h3>PayloadCMS</h3>
-                <p>Next.js-native CMS mastery: collections, rich text, media, and cloud storage.</p>
+                <p>Next.js-native CMS mastery: collections, Lexical, media, and access control.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                </div>
+            <div class="card" onclick="openSkill('react-native')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></div>
                 <h3>React Native</h3>
                 <p>Build performant iOS and Android apps with Expo and React Navigation.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
-            <div class="card">
-                <div class="card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18m-6-6l6 6 6-6M5 3h14"></path></svg>
-                </div>
+            <div class="card" onclick="openSkill('skill-creator')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18m-6-6l6 6 6-6M5 3h14"></path></svg></div>
                 <h3>Skill Creator</h3>
-                <p>A meta-skill that interviews you and generates new skills from design patterns.</p>
+                <p>Meta-skill wizard that interviews you and generates new skills from patterns.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('graphql-backend')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle><line x1="12" y1="7" x2="5" y2="17"></line><line x1="12" y1="7" x2="19" y2="17"></line><line x1="5" y1="19" x2="19" y2="19"></line></svg></div>
+                <h3>GraphQL Backend</h3>
+                <p>Apollo Server, schema design, DataLoaders, and N+1 prevention.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('graphql-frontend')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle><line x1="12" y1="7" x2="5" y2="17"></line><line x1="12" y1="7" x2="19" y2="17"></line><line x1="5" y1="19" x2="19" y2="19"></line></svg></div>
+                <h3>GraphQL Frontend</h3>
+                <p>Apollo Client, query fragments, normalized caching, and code generation.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('playwright')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                <h3>Playwright</h3>
+                <p>E2E test structure, POM, selectors, network mocking, and CI integration.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('api-integration')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg></div>
+                <h3>API Integration</h3>
+                <p>Hook UI to Firebase or REST/GraphQL via RTK Query — data flow automation.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('post-pr-review')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+                <h3>Post PR Review</h3>
+                <p>Post inline review comments directly to GitHub PRs using the gh CLI.</p>
+                <div class="card-arrow">View skill →</div>
+            </div>
+            <div class="card" onclick="openSkill('react-component-scaffolder')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                <h3>Component Scaffolder</h3>
+                <p>Generates boilerplate for strict React components with correct structure.</p>
+                <div class="card-arrow">View skill →</div>
             </div>
         </div>
     </section>
@@ -562,9 +755,108 @@
         </div>
     </footer>
 
+    <!-- Skill Detail Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeSkill()"></div>
+    <div class="drawer" id="skillDrawer">
+        <button class="drawer-close" onclick="closeSkill()">&#x2715;</button>
+        <div class="drawer-pattern-badge" id="drawerPattern">tool-wrapper</div>
+        <h2 id="drawerName"></h2>
+        <p class="drawer-desc" id="drawerDesc"></p>
+        <div class="drawer-section">
+            <h4>Trigger phrases</h4>
+            <div id="drawerTriggers"></div>
+        </div>
+        <div class="drawer-section">
+            <h4>Example prompt</h4>
+            <div class="drawer-install" onclick="copyExample()" id="drawerExampleBox" style="align-items: flex-start; gap: 12px; margin-bottom: 24px;">
+                <div style="white-space: normal; line-height: 1.5; padding-top: 1px;"><span style="color:var(--text-muted);">"</span><span id="drawerExample"></span><span style="color:var(--text-muted);">"</span></div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+        </div>
+        <div class="drawer-section">
+            <h4>Install this skill</h4>
+            <div class="drawer-install" onclick="copyInstall()" id="drawerInstallBox">
+                <div><span>$</span> <span id="drawerInstallCmd"></span></div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function copyCommand() {
-            const command = document.getElementById('commandText').innerText;
+        const SKILLS = {
+          'backend-engineer': { name: 'Backend Engineer', pattern: 'tool-wrapper', desc: 'Expert Node.js/TypeScript/MongoDB backend patterns. Covers API design with separation of concerns, Mongoose schema modeling, microservice communication, and integration testing.', triggers: ['implement backend', 'build an API', 'database models', 'microservice', 'Node.js service'], example: 'Implement a new user authentication backend service using Node.js, Express, and MongoDB. Make sure to separate the routing, controllers, and services.' },
+          'frontend-design': { name: 'Frontend Design', pattern: 'tool-wrapper', desc: 'Create distinctive, production-grade frontend interfaces with high design quality. Avoids generic AI aesthetics by committing to bold design directions.', triggers: ['build a page', 'design a component', 'make this look better', 'create a UI', 'landing page'], example: 'Help me design a stunning hero section for a SaaS landing page. Use glassmorphism, smooth gradients, and micro-animations to make it feel premium.' },
+          'firebase-setup': { name: 'Firebase Setup', pattern: 'tool-wrapper', desc: 'Firebase Auth, Firestore, and Storage conventions using the modular v9 SDK. Loads reference files for auth patterns, Firestore queries, and common gotchas.', triggers: ['set up Firebase', 'Firebase auth', 'Firestore query', 'Firebase storage', 'onAuthStateChanged'], example: 'Set up Firebase Authentication with Google Sign-in and email/password, and write a Firestore rule to ensure users can only read their own documents.' },
+          'app-architect': { name: 'App Architect', pattern: 'inversion', desc: 'Plans a new software project by gathering requirements through a structured multi-phase interview before producing an architecture document.', triggers: ['I want to build', 'help me plan', 'design a system', 'start a new project', 'architecture for'], example: 'I want to build a real-time collaborative task management app like Trello. Help me architect the system, keeping scalability and real-time updates in mind.' },
+          'build_feature_agent': { name: 'Build Feature Agent', pattern: 'pipeline', desc: 'End-to-end 5-phase workflow: Discovery → Planning → Implementation → Self-Review → Git & PR. The master orchestrator for building any feature.', triggers: ['/build_feature_agent', 'build this feature', 'implement', 'fix this bug', 'ship'], example: '/build_feature_agent Add a dark mode toggle to the entire application that persists user preference in localStorage.' },
+          'test-writing': { name: 'Test Writing', pattern: 'pipeline', desc: 'Specialized skill for writing Vitest unit/integration tests and Playwright E2E tests. Pipeline with gate conditions between each step.', triggers: ['write tests', 'add unit tests', 'E2E test', 'test this component', 'Playwright test'], example: 'Write unit tests for the useAuth.ts hook using Vitest and Mock Service Worker to intercept API login requests.' },
+          'react-query': { name: 'React Query', pattern: 'tool-wrapper', desc: 'TanStack Query (v5) conventions for query key factories, hook abstractions, mutation patterns, and common stale-closure gotchas.', triggers: ['React Query', 'TanStack Query', 'useQuery', 'useMutation', 'query key'], example: 'Implement a useProducts query and an addProduct mutation using TanStack Query, and ensure the cache invalidates optimistically.' },
+          'rtk-query': { name: 'RTK Query', pattern: 'tool-wrapper', desc: 'RTK Query data-fetching pattern for Redux Toolkit. Covers createApi, providesTags, invalidatesTags, optimistic updates, and common anti-patterns.', triggers: ['RTK Query', 'Redux Toolkit', 'createApi', 'cache tags', 'invalidatesTags'], example: 'Set up an RTK Query api slice for fetching a list of users, including caching tags for automatic invalidation when a user is modified.' },
+          'debug-investigator': { name: 'Debug Investigator', pattern: 'pipeline', desc: 'Takes a symptom and walks through 5-step structured investigation to find root cause. Uses 5-Whys reasoning and produces a structured debug report.', triggers: ['something is broken', 'this isn\'t working', 'debug this', 'error message', 'performance regression'], example: 'Debug this: When users click checkout, they get a console error stating "Uncaught TypeError: Cannot read properties of undefined (reading \'stripeId\')".' },
+          'git-workflow': { name: 'Git Workflow', pattern: 'pipeline', desc: 'Enforces branch naming, conventional commits format, PR creation, and CI babysitting. Includes the "babysit-pr" pattern for monitoring CI checks.', triggers: ['commit', 'push to git', 'create a PR', 'open a pull request', 'branch naming'], example: 'Commit my recent changes to the checkout flow, format it as a conventional commit, and open a pull request against the main branch.' },
+          'doc-coauthoring': { name: 'Doc Co-authoring', pattern: 'pipeline', desc: '3-stage guided workflow: Context Gathering → Refinement & Structure → Reader Testing. Ensures the document works for readers, not just authors.', triggers: ['write a doc', 'draft a proposal', 'create a spec', 'write up', 'decision doc'], example: 'Draft a technical proposal for migrating our database from PostgreSQL to MongoDB, focusing on the performance and scalability benefits.' },
+          'code-reviewer': { name: 'Code Reviewer', pattern: 'reviewer', desc: 'Senior Staff Engineer PR review with blocking (🔴), suggestion (🟡), and approval (🟢) tiers. Checks correctness, types, security, and style.', triggers: ['review this code', 'PR review', 'code review', 'what do you think of this', '/code_review'], example: 'Review these new API endpoints I created in src/controllers/users.ts. Look for any security vulnerabilities or inefficient queries.' },
+          'payload-cms': { name: 'PayloadCMS', pattern: 'tool-wrapper', desc: 'Deep Payload v3 expertise: collections, globals, fields, Lexical rich text, media uploads, access control, hooks, and Next.js App Router integration.', triggers: ['PayloadCMS', 'Payload collection', 'Payload field', 'Lexical editor', 'payload.find'], example: 'Create a PayloadCMS collection for "Blog Posts" using the Lexical editor for content, and configure access control so only admins can publish.' },
+          'react-native': { name: 'React Native', pattern: 'tool-wrapper', desc: 'Build performant iOS/Android apps with Expo. Covers navigation with React Navigation, styling with StyleSheet, state management, and performance optimization.', triggers: ['React Native', 'Expo', 'mobile app', 'iOS app', 'Android app'], example: 'Build a React Native component that displays a horizontal scrollable list of user profiles, optimized with FlatList to avoid performance issues.' },
+          'skill-creator': { name: 'Skill Creator', pattern: 'inversion', desc: 'Meta-skill wizard that interviews you through 4 phases, selects the right design pattern, and generates a complete skill folder with SKILL.md.', triggers: ['create a skill', 'new skill', 'build a skill for', 'add a skill'], example: 'Create a new skill for standardizing how our team writes Python FastAPI endpoints, enforcing Pydantic validations and standard error wrappers.' },
+          'graphql-backend': { name: 'GraphQL Backend', pattern: 'tool-wrapper', desc: 'Apollo Server expertise: schema design, thin resolvers, DataLoaders for N+1 prevention, auth middleware, and per-request DataLoader scoping.', triggers: ['GraphQL API', 'Apollo Server', 'GraphQL schema', 'add a mutation', 'N+1 problem'], example: 'Add a new GraphQL mutation to update user profile information, and implement a DataLoader to solve an N+1 fetching problem on the users field.' },
+          'graphql-frontend': { name: 'GraphQL Frontend', pattern: 'tool-wrapper', desc: 'Apollo Client conventions: precise query fragments, normalized caching, optimistic updates, manual cache.modify, and graphql-codegen integration.', triggers: ['Apollo Client', 'GraphQL query', 'useLazyQuery', 'cache invalidation', 'graphql-codegen'], example: 'Write an Apollo Client query using fragments to fetch a product, and handle the optimistic cache update when adding a product to the cart.' },
+          'playwright': { name: 'Playwright', pattern: 'pipeline', desc: 'Write, run, and debug E2E tests with @playwright/test. Covers test structure, selector strategy (getByRole first), POM, network mocking, and auth reuse.', triggers: ['Playwright test', 'E2E test', 'end-to-end', 'browser automation', 'npx playwright'], example: 'Write a Playwright E2E test that validates the complete user registration flow, utilizing Page Object Models to encapsulate the selectors.' },
+          'api-integration': { name: 'API Integration', pattern: 'tool-wrapper', desc: 'Hook UI components to Firebase or REST/GraphQL backends via RTK Query or custom hooks. Always abstracts calls, types responses, and handles loading/error states.', triggers: ['connect to API', 'fetch data in component', 'hook up to backend', 'API call', 'data fetching'], example: 'Connect the UserSettings component to the /api/settings REST endpoint, handling both success and loading/error states gracefully.' },
+          'post-pr-review': { name: 'Post PR Review', pattern: 'tool-wrapper', desc: 'Posts completed code review feedback as inline comments to a GitHub PR using the gh CLI. Requires gh auth. Only posts actionable items.', triggers: ['post review to PR', 'post inline comments', '/post_pr_review', 'gh pr comment'], example: 'Take the output of our code review discussion and post the feedback to my open Pull Request as inline comments using the gh CLI.' },
+          'react-component-scaffolder': { name: 'Component Scaffolder', pattern: 'generator', desc: 'Generates boilerplate for strict React Vite components: PascalCase folder, .tsx file, index.ts barrel, and .types.ts if props > 5. Follows interface-over-type convention.', triggers: ['create a component', 'new component', 'scaffold a component', 'React component boilerplate'], example: 'Scaffold a new strict React component named "DataGrid" that accepts rows and columns as props, following our boilerplate conventions.' }
+        };
+
+        function openSkill(id) {
+            const s = SKILLS[id];
+            if (!s) return;
+            document.getElementById('drawerName').textContent = s.name;
+            document.getElementById('drawerDesc').textContent = s.desc;
+            document.getElementById('drawerPattern').textContent = s.pattern;
+            const cmd = 'npx agents-skills add ' + id;
+            document.getElementById('drawerInstallCmd').textContent = cmd;
+            const triggersEl = document.getElementById('drawerTriggers');
+            triggersEl.innerHTML = '';
+            s.triggers.forEach(t => {
+                const tag = document.createElement('span');
+                tag.className = 'drawer-tag';
+                tag.textContent = t;
+                triggersEl.appendChild(tag);
+            });
+            document.getElementById('drawerExample').textContent = s.example;
+            document.getElementById('drawerOverlay').classList.add('open');
+            document.getElementById('skillDrawer').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSkill() {
+            document.getElementById('drawerOverlay').classList.remove('open');
+            document.getElementById('skillDrawer').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function copyInstall() {
+            const cmd = document.getElementById('drawerInstallCmd').textContent;
+            navigator.clipboard.writeText(cmd).then(() => {
+                const box = document.getElementById('drawerInstallBox');
+                box.style.borderColor = '#4ade80';
+                setTimeout(() => { box.style.borderColor = ''; }, 1500);
+            });
+        }
+
+        function copyExample() {
+            const prompt = document.getElementById('drawerExample').textContent;
+            navigator.clipboard.writeText(prompt).then(() => {
+                const box = document.getElementById('drawerExampleBox');
+                box.style.borderColor = '#4ade80';
+                setTimeout(() => { box.style.borderColor = ''; }, 1500);
+            });
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSkill(); });
+
+        function copyCommand(id) {
+            const command = document.getElementById(id).innerText;
             navigator.clipboard.writeText(command).then(() => {
                 const badge = document.querySelector('.hero-badge');
                 const oldText = badge.innerText;
@@ -579,7 +871,6 @@
             });
         }
 
-        // Simple scroll reveal
         window.addEventListener('scroll', () => {
             const cards = document.querySelectorAll('.card');
             cards.forEach(card => {

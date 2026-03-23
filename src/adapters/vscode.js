@@ -55,6 +55,12 @@ class VSCodeAdapter extends IDEAdapter {
     const hooksSrc = path.join(sourceDir, 'hooks');
     await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'VS Code Hook');
   }
+
+  async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
+    const { clack } = options;
+    const dest = path.join(baseDir, '.github', 'skills', skillName);
+    await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
 }
 
 module.exports = { VSCodeAdapter };

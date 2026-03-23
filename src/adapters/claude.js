@@ -52,6 +52,12 @@ class ClaudeAdapter extends IDEAdapter {
     const hooksSrc = path.join(sourceDir, 'hooks');
     await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'Claude Hook');
   }
+
+  async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
+    const { clack } = options;
+    const dest = path.join(baseDir, '.claude', 'skills', skillName);
+    await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
 }
 
 module.exports = { ClaudeAdapter };
