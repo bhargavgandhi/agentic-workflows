@@ -86,12 +86,14 @@ The interactive CLI will ask you two questions:
 | `git-workflow/`               | Pipeline      | Branch naming, conventional commits, PR creation, CI babysit |
 | `graphql-backend/`            | Tool Wrapper  | Apollo Server, DataLoaders, schema design, N+1 prevention   |
 | `graphql-frontend/`           | Tool Wrapper  | Apollo Client, fragments, cache management, code generation |
+| `payload-cms/`                | Tool Wrapper  | PayloadCMS v3 + Next.js: collections, blocks, media, email  |
 | `playwright/`                 | Pipeline      | Full Playwright E2E: selectors, POM, assertions, mocking, CI |
 | `react-component-scaffolder/` | Generator     | Boilerplate for strict React/Vite components                |
+| `react-native/`              | Tool Wrapper  | Expo, React Navigation, native modules, styling, performance |
 | `react-query/`                | Tool Wrapper  | TanStack Query conventions, key factories, mutations        |
 | `rtk-query/`                  | Tool Wrapper  | RTK Query data-fetching, cache tags, optimistic updates     |
+| `skill-creator/`              | Inversion     | Interview wizard that generates new skills from patterns     |
 | `test-writing/`               | Pipeline      | Vitest unit/integration tests and Playwright E2E tests      |
-
 
 ### Workflows (`workflows/`)
 

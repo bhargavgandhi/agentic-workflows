@@ -1,0 +1,24 @@
+{
+  "skills_directory": ".agents/skills",
+  "skills": [
+    "api-integration",
+    "app-architect",
+    "backend-engineer",
+    "code-reviewer",
+    "debug-investigator",
+    "doc-coauthoring",
+    "firebase-setup",
+    "frontend-design",
+    "git-workflow",
+    "graphql-backend",
+    "graphql-frontend",
+    "payload-cms",
+    "playwright",
+    "react-component-scaffolder",
+    "react-native",
+    "react-query",
+    "rtk-query",
+    "skill-creator",
+    "test-writing"
+  ]
+}
