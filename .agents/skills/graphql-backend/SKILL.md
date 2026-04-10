@@ -1,10 +1,13 @@
 ---
 name: graphql-backend
 description: Trigger this skill when the user asks you to implement a GraphQL API backend, add new GraphQL Queries/Mutations, define GraphQL Schemas, or solve N+1 fetching problems.
+dependencies:
+  - backend-engineer
 metadata:
   pattern: tool-wrapper
   domain: graphql-server
 ---
+
 
 # ⚙️ GraphQL Backend Engineer Skill
 

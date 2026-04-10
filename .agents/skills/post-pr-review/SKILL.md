@@ -1,11 +1,14 @@
 ---
 name: post-pr-review
 description: Post completed code review feedback directly to a GitHub Pull Request as inline comments using the GitHub CLI. Use when the user asks to post a review to a PR.
+dependencies:
+  - code-reviewer
 metadata:
   pattern: tool-wrapper
   domain: git-github
   requires: gh-cli
 ---
+
 
 # Post PR Review Skill
 

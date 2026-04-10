@@ -480,15 +480,16 @@
         <div class="brand">agents-skills</div>
         <div class="nav-links">
             <a href="#install">Install</a>
-            <a href="#features">Features</a>
+            <a href="#cli">CLI</a>
+            <a href="#catalog">Skills</a>
+            <a href="#recipes">Recipes</a>
             <a href="#mapping">Mapping</a>
-            <a href="#catalog">Catalog</a>
         </div>
         <a href="https://github.com/bhargavgandhi/agentic-workflows" class="cta-button">View on GitHub</a>
     </nav>
 
     <header>
-        <div class="hero-badge">Agentic Infrastructure</div>
+        <div class="hero-badge">v2.0 — Context-Aware Agent Platform</div>
         <h1>Unified Context for <br> AI Agents.</h1>
         <p>Scaffold project-agnostic rules, skills, and workflows across every major AI IDE with a single command.</p>
         
@@ -606,6 +607,33 @@
         </div>
     </section>
 
+    <!-- CLI Commands Section -->
+    <section id="cli" class="grid-section" style="padding-top:0;">
+        <div class="section-header">
+            <h2>CLI Commands</h2>
+            <p>A complete toolkit — not just an installer.</p>
+        </div>
+        <div style="background: #0a0a0a; border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px; max-width: 800px; margin: 0 auto;">
+            <div style="font-family: monospace; font-size:0.9rem;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; margin-bottom: 12px;">
+                    <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">Command</span>
+                    <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">Description</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px 0;">
+                    <div><span style="color:#a78bfa;">agents-skills</span></div><div style="color:var(--text-muted); padding-left:16px;">Full install wizard</div>
+                    <div><span style="color:#a78bfa;">agents-skills add</span> <span style="color:#4ade80;">&lt;skill&gt;</span></div><div style="color:var(--text-muted); padding-left:16px;">Install skill with auto-deps</div>
+                    <div><span style="color:#a78bfa;">agents-skills list</span></div><div style="color:var(--text-muted); padding-left:16px;">List installed content + versions</div>
+                    <div><span style="color:#a78bfa;">agents-skills doctor</span></div><div style="color:var(--text-muted); padding-left:16px;">Workspace health check</div>
+                    <div><span style="color:#a78bfa;">agents-skills init</span></div><div style="color:var(--text-muted); padding-left:16px;">Auto-detect stack → project profile</div>
+                    <div><span style="color:#a78bfa;">agents-skills recipe</span> <span style="color:#4ade80;">[name]</span></div><div style="color:var(--text-muted); padding-left:16px;">Browse & run prompt recipes</div>
+                    <div><span style="color:#a78bfa;">agents-skills tokens</span></div><div style="color:var(--text-muted); padding-left:16px;">Token budget breakdown (40% rule)</div>
+                    <div><span style="color:#a78bfa;">agents-skills compact</span></div><div style="color:var(--text-muted); padding-left:16px;">Create context snapshot</div>
+                    <div><span style="color:#a78bfa;">agents-skills telemetry</span></div><div style="color:var(--text-muted); padding-left:16px;">Usage dashboard (local only)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="catalog" class="grid-section">
         <div class="section-header">
             <h2>The Catalog</h2>
@@ -642,7 +670,13 @@
                 <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
                 <h3>Build Feature Agent</h3>
                 <p>Standardized Research → Plan → Execute workflow for consistent delivery.</p>
-                <div class="card-arrow">View skill →</div>
+                <div class="card-arrow">View workflow →</div>
+            </div>
+            <div class="card" onclick="openSkill('fullstack_feature_agent')">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <h3>Fullstack Feature Agent</h3>
+                <p>Phase-aware backend → frontend → test workflow. Swaps skills between phases to stay under the 40% context budget.</p>
+                <div class="card-arrow">View workflow →</div>
             </div>
             <div class="card" onclick="openSkill('test-writing')">
                 <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
@@ -743,6 +777,47 @@
         </div>
     </section>
 
+    <!-- Recipes Section -->
+    <section id="recipes" class="grid-section">
+        <div class="section-header">
+            <h2>Prompt Recipes</h2>
+            <p>Parameterized templates that assemble complete AI prompts. Run interactively, copy to clipboard.</p>
+        </div>
+        <p style="color:var(--text-muted); margin-bottom: 40px;">Run <code style="background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:6px; font-size:0.85rem;">agents-skills recipe &lt;name&gt;</code> to fill parameters and get a ready-to-paste prompt.</p>
+        <div class="card-grid">
+            <div class="card" style="cursor:default;">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+                <h3>add-auth</h3>
+                <p>Add Firebase, Supabase, or Clerk authentication with protected route guards.</p>
+                <div style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">Params: provider, routes, login page</div>
+            </div>
+            <div class="card" style="cursor:default;">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                <h3>add-crud-page</h3>
+                <p>Full CRUD: list view, create/edit form, delete confirmation, for any entity.</p>
+                <div style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">Params: entity name, route, data source</div>
+            </div>
+            <div class="card" style="cursor:default;">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg></div>
+                <h3>add-api-endpoint</h3>
+                <p>REST or GraphQL endpoint with input validation, auth checks, and error handling.</p>
+                <div style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">Params: name, method, path, auth required</div>
+            </div>
+            <div class="card" style="cursor:default;">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                <h3>add-test-suite</h3>
+                <p>Comprehensive test coverage: unit, integration, and Playwright E2E for any module.</p>
+                <div style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">Params: target, test types, edge cases</div>
+            </div>
+            <div class="card" style="cursor:default;">
+                <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                <h3>setup-ci</h3>
+                <p>GitHub Actions CI/CD with lint, test, build, and deploy to Vercel/Netlify/Railway.</p>
+                <div style="margin-top:12px; font-size:0.8rem; color:var(--text-muted);">Params: project type, pkg manager, deploy target</div>
+            </div>
+        </div>
+    </section>
+
     <footer>
         <div class="brand">agents-skills</div>
         <div class="footer-links">
@@ -751,7 +826,7 @@
             <a href="https://github.com/bhargavgandhi/agentic-workflows/blob/main/LICENSE">License</a>
         </div>
         <div class="footer-credits">
-            Crafted for the future of AI-Assisted Engineering.
+            agents-skills v2.0 — Crafted for the future of AI-Assisted Engineering.
         </div>
     </footer>
 
@@ -788,7 +863,8 @@
           'frontend-design': { name: 'Frontend Design', pattern: 'tool-wrapper', desc: 'Create distinctive, production-grade frontend interfaces with high design quality. Avoids generic AI aesthetics by committing to bold design directions.', triggers: ['build a page', 'design a component', 'make this look better', 'create a UI', 'landing page'], example: 'Help me design a stunning hero section for a SaaS landing page. Use glassmorphism, smooth gradients, and micro-animations to make it feel premium.' },
           'firebase-setup': { name: 'Firebase Setup', pattern: 'tool-wrapper', desc: 'Firebase Auth, Firestore, and Storage conventions using the modular v9 SDK. Loads reference files for auth patterns, Firestore queries, and common gotchas.', triggers: ['set up Firebase', 'Firebase auth', 'Firestore query', 'Firebase storage', 'onAuthStateChanged'], example: 'Set up Firebase Authentication with Google Sign-in and email/password, and write a Firestore rule to ensure users can only read their own documents.' },
           'app-architect': { name: 'App Architect', pattern: 'inversion', desc: 'Plans a new software project by gathering requirements through a structured multi-phase interview before producing an architecture document.', triggers: ['I want to build', 'help me plan', 'design a system', 'start a new project', 'architecture for'], example: 'I want to build a real-time collaborative task management app like Trello. Help me architect the system, keeping scalability and real-time updates in mind.' },
-          'build_feature_agent': { name: 'Build Feature Agent', pattern: 'pipeline', desc: 'End-to-end 5-phase workflow: Discovery → Planning → Implementation → Self-Review → Git & PR. The master orchestrator for building any feature.', triggers: ['/build_feature_agent', 'build this feature', 'implement', 'fix this bug', 'ship'], example: '/build_feature_agent Add a dark mode toggle to the entire application that persists user preference in localStorage.' },
+          'build_feature_agent': { name: 'Build Feature Agent', pattern: 'pipeline', desc: 'End-to-end 6-phase workflow: Context Budget Check → Discovery → Planning → Implementation → Self-Review → Git & PR. The master orchestrator with Phase 0 budget gate.', triggers: ['/build_feature_agent', 'build this feature', 'implement', 'fix this bug', 'ship'], example: '/build_feature_agent Add a dark mode toggle to the entire application that persists user preference in localStorage.' },
+          'fullstack_feature_agent': { name: 'Fullstack Feature Agent', pattern: 'pipeline', desc: 'Phase-aware fullstack workflow: Backend Phase (loads backend skills) → Frontend Phase (swaps to UI skills) → Test Phase. Enforces the 40% token budget by swapping — not stacking — skills between phases.', triggers: ['/fullstack_feature_agent', 'build a fullstack feature', 'needs frontend and backend', 'full feature with API', 'new module'], example: '/fullstack_feature_agent Build a recurring events feature: Firestore data model, a REST API endpoint, a RecurrenceSelector component, and Playwright E2E tests.' },
           'test-writing': { name: 'Test Writing', pattern: 'pipeline', desc: 'Specialized skill for writing Vitest unit/integration tests and Playwright E2E tests. Pipeline with gate conditions between each step.', triggers: ['write tests', 'add unit tests', 'E2E test', 'test this component', 'Playwright test'], example: 'Write unit tests for the useAuth.ts hook using Vitest and Mock Service Worker to intercept API login requests.' },
           'react-query': { name: 'React Query', pattern: 'tool-wrapper', desc: 'TanStack Query (v5) conventions for query key factories, hook abstractions, mutation patterns, and common stale-closure gotchas.', triggers: ['React Query', 'TanStack Query', 'useQuery', 'useMutation', 'query key'], example: 'Implement a useProducts query and an addProduct mutation using TanStack Query, and ensure the cache invalidates optimistically.' },
           'rtk-query': { name: 'RTK Query', pattern: 'tool-wrapper', desc: 'RTK Query data-fetching pattern for Redux Toolkit. Covers createApi, providesTags, invalidatesTags, optimistic updates, and common anti-patterns.', triggers: ['RTK Query', 'Redux Toolkit', 'createApi', 'cache tags', 'invalidatesTags'], example: 'Set up an RTK Query api slice for fetching a list of users, including caching tags for automatic invalidation when a user is modified.' },

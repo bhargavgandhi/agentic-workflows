@@ -1,6 +1,6 @@
 {
   "name": "agents-skills",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "Cross-IDE agent scaffolding: install rules, skills, workflows and hooks for Antigravity, VS Code, Cursor, and Claude Code",
   "repository": {
     "type": "git",
@@ -18,6 +18,7 @@
     "src/",
     ".agents/",
     "skills/",
+    "recipes/",
     "skills.json"
   ],
   "scripts": {
@@ -26,7 +27,7 @@
     "setup:hooks": "git config core.hooksPath hooks",
     "version:patch": "npm version patch",
     "publish:package": "npm publish --access public",
-    "prepublishOnly": "rm -rf skills && cp -r .agents/skills skills"
+    "prepublishOnly": "rm -rf skills recipes && cp -r .agents/skills skills && cp -r .agents/recipes recipes"
   },
   "keywords": [
     "agent",

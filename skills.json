@@ -1,4 +1,5 @@
 {
+  "schema_version": "2.0.0",
   "skills_directory": ".agents/skills",
   "skills": [
     "api-integration",
@@ -21,5 +22,127 @@
     "rtk-query",
     "skill-creator",
     "test-writing"
-  ]
+  ],
+  "registry": {
+    "api-integration": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["api", "redux", "firebase", "state"],
+      "dependencies": []
+    },
+    "app-architect": {
+      "version": "1.0.0",
+      "pattern": "inversion",
+      "tags": ["architecture", "planning", "requirements"],
+      "dependencies": []
+    },
+    "backend-engineer": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["backend", "nodejs", "api", "database", "microservices"],
+      "dependencies": []
+    },
+    "code-reviewer": {
+      "version": "1.0.0",
+      "pattern": "reviewer",
+      "tags": ["review", "quality", "pr", "checklist"],
+      "dependencies": []
+    },
+    "debug-investigator": {
+      "version": "1.0.0",
+      "pattern": "pipeline",
+      "tags": ["debugging", "errors", "investigation", "performance"],
+      "dependencies": []
+    },
+    "doc-coauthoring": {
+      "version": "1.0.0",
+      "pattern": "pipeline",
+      "tags": ["documentation", "writing", "specs", "proposals"],
+      "dependencies": []
+    },
+    "firebase-setup": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["firebase", "auth", "firestore", "storage"],
+      "dependencies": []
+    },
+    "frontend-design": {
+      "version": "1.2.0",
+      "pattern": "tool-wrapper",
+      "tags": ["ui", "css", "react", "design", "components"],
+      "dependencies": ["react-component-scaffolder"]
+    },
+    "git-workflow": {
+      "version": "1.0.0",
+      "pattern": "pipeline",
+      "tags": ["git", "pr", "commits", "branches", "ci"],
+      "dependencies": []
+    },
+    "graphql-backend": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["graphql", "apollo", "backend", "schema", "dataloader"],
+      "dependencies": ["backend-engineer"]
+    },
+    "graphql-frontend": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["graphql", "apollo", "client", "cache", "fragments"],
+      "dependencies": []
+    },
+    "payload-cms": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["cms", "payload", "nextjs", "content", "collections"],
+      "dependencies": []
+    },
+    "playwright": {
+      "version": "1.0.0",
+      "pattern": "pipeline",
+      "tags": ["testing", "e2e", "playwright", "browser", "automation"],
+      "dependencies": []
+    },
+    "post-pr-review": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["review", "github", "pr", "inline-comments"],
+      "dependencies": ["code-reviewer"]
+    },
+    "react-component-scaffolder": {
+      "version": "1.0.0",
+      "pattern": "generator",
+      "tags": ["react", "components", "scaffold", "boilerplate"],
+      "dependencies": []
+    },
+    "react-native": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["react-native", "expo", "mobile", "navigation"],
+      "dependencies": []
+    },
+    "react-query": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["react-query", "tanstack", "data-fetching", "cache"],
+      "dependencies": []
+    },
+    "rtk-query": {
+      "version": "1.0.0",
+      "pattern": "tool-wrapper",
+      "tags": ["redux", "rtk-query", "state", "cache", "api"],
+      "dependencies": []
+    },
+    "skill-creator": {
+      "version": "1.0.0",
+      "pattern": "inversion",
+      "tags": ["meta", "skills", "creation", "templates"],
+      "dependencies": []
+    },
+    "test-writing": {
+      "version": "1.0.0",
+      "pattern": "pipeline",
+      "tags": ["testing", "vitest", "jest", "unit", "integration"],
+      "dependencies": []
+    }
+  }
 }
