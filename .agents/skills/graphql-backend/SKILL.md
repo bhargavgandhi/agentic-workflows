@@ -1,48 +1,105 @@
 ---
 name: graphql-backend
-description: Trigger this skill when the user asks you to implement a GraphQL API backend, add new GraphQL Queries/Mutations, define GraphQL Schemas, or solve N+1 fetching problems.
-dependencies:
-  - backend-engineer
-metadata:
-  pattern: tool-wrapper
-  domain: graphql-server
+description: Implement a GraphQL API backend — schemas, resolvers, DataLoaders for N+1 prevention, and auth context.
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: [backend-engineer]
 ---
 
+## 1. Trigger Conditions
 
-# ⚙️ GraphQL Backend Engineer Skill
+Invoke this skill when:
 
-**Role**: You are an expert Backend Engineer possessing deep knowledge of GraphQL server architecture and execution flows. 
+- Implementing a GraphQL API backend (Apollo Server, TypeGraphQL, or express-graphql)
+- Adding new Queries, Mutations, or Subscriptions to an existing schema
+- Debugging N+1 query problems in resolvers
+- Designing a GraphQL schema for a new domain
 
-## 🎯 Primary Directives
+## 2. Prerequisites
 
-1. **Server**: You utilize Apollo Server, express-graphql, or TypeGraphQL over Node.js.
-2. **Schema**: You design robust, scalable, and federated (if applicable) Graph architectures.
-3. **Execution**: You resolve data efficiently using Dataloaders (see Section 3 below).
+- `backend-engineer` skill conventions applied (service layer, error handling)
+- GraphQL server library confirmed (Apollo Server is default)
+- `references/` files available
 
----
+## 3. Steps
 
-## 🏗 Core Responsibilities & Workflows
+### Step 1: Schema Design
+- Design types around business entities, not database structure
+- Use `Interface` and `Union` types for polymorphic results:
+  ```graphql
+  union UpdateUserResult = User | InvalidInputError | NotFoundError
+  ```
+- Keep types focused and minimal — only expose what clients need
 
-### 1. Schema Design (Type Definition)
-- Use Interface and Union types powerfully. If an operation returns disparate items or specific Error Types alongside success payloads, model it explicitly (e.g., `UpdateUserResult = User | InvalidInputError | NotFoundError`).
-- Keep Types focused on the Domain, not the database structure. The Graph represents the business entity.
+### Step 2: Thin Resolvers
+Resolvers do exactly three things:
+1. Extract arguments from the request
+2. Check authorisation context
+3. Call the Service layer and return the result
 
-### 2. Resolvers & Business Logic
-- **Thin Resolvers**: Resolvers should ONLY be responsible for extracting arguments, checking authorization context, calling the core Service/Domain layer, and formatting the response. Never embed raw SQL or Mongo logic inside a Resolver.
-- **Root vs Field Resolvers**: Use field-level resolvers heavily to resolve relational properties lazily/on-demand rather than over-fetching in the parent root resolver.
+Never embed raw SQL, Mongo logic, or business validation inside a resolver.
 
-### 3. The N+1 Query Problem & Dataloader
-- **Mandatory Usage**: Every field resolver that loads a related entity from a database OR an external microservice MUST go through a Facebook `DataLoader` instance.
-- Ensure the Dataloader is scoped **per-request** within the GraphQL context function so cache leaks do not occur across users. 
-- Example: If resolving `Author.books`, the resolver takes `author.id` and calls `context.dataloaders.booksByAuthor.load(author.id)`.
+### Step 3: DataLoaders (Mandatory for relational fields)
+Every field resolver that loads a related entity MUST use a `DataLoader`:
+- Instantiate DataLoaders **per-request** in the context function — never globally
+- Global DataLoader instances leak cache between users (cross-tenant data exposure)
 
-### 4. Authentication & Context
-- Authentication should happen *before* the request reaches the resolver (usually inside HTTP middleware forming the `Context`).
-- Authorization (Permissions) checks should happen inside the Service layer, not blindly within the resolver.
-- Check scopes (e.g., `@auth(requires: USER)`) securely. Use custom directives if the framework supports it.
+```ts
+// context.ts
+const context = ({ req }) => ({
+  user: req.user,
+  dataloaders: {
+    booksByAuthor: new DataLoader(batchLoadBooksByAuthor),
+  },
+});
+```
 
-## Gotchas
+```ts
+// resolver
+Author: {
+  books: (author, _, { dataloaders }) =>
+    dataloaders.booksByAuthor.load(author.id),
+}
+```
 
-1. **N+1 Queries**: Writing field resolvers without a `DataLoader`. This sends hundreds of queries to the DB sequentially.
-2. **Global DataLoader Instances**: Instantiating a generic `DataLoader` outside the request context. This leaks cache between users and exposes cross-tenant data. Always instantiate inside the `context` creation function.
-3. **Fat Resolvers**: Embedding business logic, raw SQL, or validation directly inside the resolver function instead of the service layer.
+### Step 4: Authentication & Authorisation
+- Authentication: verify token in HTTP middleware before the request reaches any resolver. Set `context.user`.
+- Authorisation: check permissions inside the **Service layer**, not the resolver.
+- Use custom directives (`@auth(requires: ADMIN)`) for declarative field-level access control.
+
+## 4. Anti-Rationalization Table
+
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll skip DataLoader for now, we can add it when performance is a problem" | N+1 is not a performance problem — it's a correctness problem at scale. Add DataLoader when writing the resolver. |
+| "I'll instantiate DataLoader at module level for simplicity" | Module-level DataLoader leaks cache between users. Per-request is non-negotiable. |
+| "I'll put the business logic in the resolver for speed" | Fat resolvers can't be tested without a full GraphQL stack. Move logic to the service layer. |
+| "I'll query all fields to be safe" | Over-fetching defeats the purpose of GraphQL. Query only the exact fields the resolver needs. |
+
+## 5. Red Flags
+
+Signs this skill is being violated:
+
+- Field resolvers making database calls without a DataLoader
+- DataLoader instantiated outside the context function (module-level)
+- Business logic or raw queries embedded in resolvers
+- No authorisation check on mutations that write user data
+- Schema types mirror database tables exactly (not business entities)
+
+## 6. Verification Gate
+
+Before marking GraphQL backend work complete:
+
+- [ ] Schema types represent business entities, not database tables
+- [ ] All resolvers are thin (extract → authorise → call service → return)
+- [ ] Every relational field resolver uses a DataLoader
+- [ ] DataLoaders instantiated per-request in the context function
+- [ ] Authentication performed in middleware before resolvers
+- [ ] Authorisation checked in the service layer
+- [ ] N+1 test: fetch a list with related entities — confirm single batched query, not N queries
+
+## 7. References
+
+- [dataloader-patterns.md](references/dataloader-patterns.md) — DataLoader batching and caching patterns

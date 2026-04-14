@@ -25,5 +25,6 @@ dist-ssr
 
 .claude/settings.json
 
-# npm publish dist output (generated from .agents/skills/ via prepublishOnly)
+# npm publish dist output (generated from .agents/ via prepublishOnly)
 /skills/
+/recipes/

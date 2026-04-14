@@ -185,6 +185,22 @@ async function doctorCommand() {
     _info('Not configured — run `agents-skills telemetry on` to enable');
   }
 
+  // ── 8. Schema version check ────────────────────────────────────────────────
+  _header('Schema Version');
+
+  const installedSchemaFile = path.join(agentsDir, '.schema_version');
+  const PKG_SCHEMA = '3.0.0';
+  if (fs.existsSync(installedSchemaFile)) {
+    const installedSchema = fs.readFileSync(installedSchemaFile, 'utf8').trim();
+    const isCurrent = installedSchema === PKG_SCHEMA;
+    _check(checks, isCurrent,
+      `Schema v${installedSchema} (current)`,
+      `Schema v${installedSchema} — package is v${PKG_SCHEMA}. Run \`agents-skills upgrade\` to migrate.`
+    );
+  } else {
+    _info(`No schema version marker found. Run \`agents-skills upgrade\` to set up v${PKG_SCHEMA}.`);
+  }
+
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log('');
   const passed  = checks.filter(c => c).length;
@@ -195,6 +211,9 @@ async function doctorCommand() {
     console.log(pc.green(`  ✅ All ${passed} checks passed. Workspace is healthy.`));
   } else {
     console.log(pc.yellow(`  ⚠️  ${passed} passed, ${failed} issue(s) found. See warnings above.`));
+    if (failed > 0) {
+      console.log(pc.dim(`  Tip: Run \`agents-skills upgrade\` to fix outdated skills.`));
+    }
   }
   console.log('');
 }

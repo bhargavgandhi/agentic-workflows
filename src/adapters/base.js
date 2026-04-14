@@ -35,6 +35,18 @@ class IDEAdapter {
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
     throw new Error('installSkill() not implemented');
   }
+
+  /**
+   * Return the absolute path where a skill is installed for this adapter.
+   * Used after installSkill() to write the .version file to the correct location.
+   * @param {string} baseDir   — workspace root or home dir
+   * @param {string} scope     — 'local' or 'global'
+   * @param {string} skillName — name of the skill
+   * @returns {string}
+   */
+  skillDir(_baseDir, _scope, _skillName) {
+    throw new Error('skillDir() not implemented');
+  }
 }
 
 module.exports = { IDEAdapter };

@@ -1,47 +1,91 @@
 ---
 name: backend-engineer
-description: Trigger this skill when the user asks you to implement backend business logic, database models, robust APIs, or microservice architecture.
-metadata:
-  pattern: tool-wrapper
-  domain: node-typescript-mongodb
+description: Implement backend business logic, database models, robust APIs, and microservice architecture in TypeScript/Node.js.
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: []
 ---
 
-# 🚀 Backend Engineer Skill
+## 1. Trigger Conditions
 
-**Role**: You are an expert Backend Engineer possessing deep knowledge of modern architectural patterns.
+Invoke this skill when:
 
-## 🎯 Primary Directives
+- User asks to implement backend business logic, a REST/GraphQL API, or database models
+- A backend slice in `incremental-implementation` is being executed
+- User asks about microservice communication patterns, event-driven architecture, or service layers
+- Setting up a new Node.js service or API endpoint
 
-1. **Language & Runtime**: You write idiomatic TypeScript running on Node.js.
-2. **Database**: You utilize MongoDB efficiently, emphasizing proper indexing. Load `references/mongodb-patterns.md` for conventions.
-3. **API Design**: You build RESTful APIs or GraphQL endpoints utilizing standard interface definitions.
+## 2. Prerequisites
 
----
+- Clear API contract or feature requirement
+- Database choice confirmed (MongoDB is default; note if different)
+- `references/mongodb-patterns.md` available
 
-## 🏗 Core Responsibilities & Workflows
+## 3. Steps
 
-### 1. Database & Modeling (MongoDB)
+### Step 1: Design the Layers First
+Before writing any code, define the three-layer separation:
+- **Controller**: parses HTTP input/output only. No business logic.
+- **Service**: executes business logic. Throws typed errors.
+- **Repository/Model**: touches the database. Never called directly from controllers.
 
-- Always write explicit TypeScript interfaces corresponding to your Mongoose schemas.
-- Load and follow `references/mongodb-patterns.md`.
+If the layers aren't clear, ask before implementing.
 
-### 2. API Implementation
+### Step 2: Database & Modelling (MongoDB)
+- Write explicit TypeScript interfaces for every Mongoose schema
+- Define indexes alongside the schema — not as an afterthought
+- Load `references/mongodb-patterns.md` for document structure and indexing conventions
 
-- **Separation of Concerns**: Never put business logic in route handlers (Controllers). Controllers parse input/output, Services execute business logic, and Data Access layers (Repositories/Models) touch the DB.
-- **Validation**: Always implement runtime validation on incoming DTOs/Payloads (e.g., Zod, Joi).
-- **Error Handling**: Throw typed, custom error classes (e.g., `NotFoundError`, `UnauthorizedError`) from the Service layer, and use a centralized Express/Fastify error middleware to map them to correct HTTP status codes consistently.
+### Step 3: API Implementation
+- Validate every incoming payload at the boundary (Zod or Joi)
+- Throw typed custom errors from the Service layer (`NotFoundError`, `UnauthorizedError`, etc.)
+- Use centralised Express/Fastify error middleware to map errors to HTTP status codes
 
-### 3. Microservices Communication
+### Step 4: Microservice Communication
+- **Synchronous** (HTTP/gRPC): wrap calls with timeout, retry, and fallback
+- **Asynchronous** (Kafka/RabbitMQ/Redis): document the event payload contract explicitly before wiring up producers/consumers
 
-- **Synchronous**: When calling other internal services via HTTP/gRPC, wrap the call with proper timeout controls, retries, and fallback mechanisms.
-- **Asynchronous**: When using event-driven architectures (Kafka, RabbitMQ, Redis PubSub), document the event payload contract explicitly.
+### Step 5: Testing
+- Write integration tests against `mongodb-memory-server` for Repository/Service logic
+- Mock all external third-party service calls completely
+- No business logic in tests — tests verify behaviour, not implementation
 
-### 4. Testing
+## 4. Anti-Rationalization Table
 
-- Write integration tests connecting to an in-memory database (like `mongodb-memory-server`) to test the Repository/Service logic deeply.
-- Mock external third-party service calls completely.
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll put the business logic in the route handler for speed" | Fat controllers are where bugs hide and tests fail. Service layer is non-negotiable. |
+| "I'll add validation later, let me get the logic working first" | Unvalidated input at the boundary is a security hole. Validate first, always. |
+| "I'll skip indexes for now, we can add them later" | Missing indexes on a growing collection cause full collection scans. Define them with the schema. |
+| "I'll use `any` for the DTO type temporarily" | Temporary `any` becomes permanent. Type the DTO before implementing the handler. |
+| "I don't need to document the event contract, it's obvious" | Event consumers break silently when the shape changes. Document the contract explicitly. |
 
-## Gotchas
+## 5. Red Flags
 
-1. **MongoDB Anti-Patterns**: See `references/mongodb-patterns.md` for indexing and document structure rules.
-2. **Fat Controllers**: Moving business logic into the Controller instead of the Service layer. Always keep Controllers thin — they parse input/output only.
+Signs this skill is being violated:
+
+- Business logic in route handlers/controllers
+- No input validation on an API endpoint
+- MongoDB query with no index on the filter field
+- `any` type used for request body or database documents
+- Service layer calls `res.json()` directly (controller concerns leaked in)
+- Integration test hits a live database instead of `mongodb-memory-server`
+
+## 6. Verification Gate
+
+Before marking backend work complete:
+
+- [ ] Controller/Service/Repository separation present and correct
+- [ ] All incoming DTOs validated with Zod or Joi at the boundary
+- [ ] Typed custom error classes used in the Service layer
+- [ ] Centralised error middleware present
+- [ ] MongoDB schemas have explicit TypeScript interfaces and index definitions
+- [ ] `references/mongodb-patterns.md` consulted
+- [ ] Integration tests run against in-memory database
+- [ ] External third-party calls fully mocked in tests
+
+## 7. References
+
+- [mongodb-patterns.md](references/mongodb-patterns.md) — Schema design, indexing, and query patterns

@@ -7,15 +7,57 @@ const { ContextCompactor } = require('../core/context-compactor');
 const { countTokens, loadProfileBudget } = require('../core/token-counter');
 
 /**
- * `agents-skills compact`
+ * `agents-skills compact [--auto <json>]`
  *
- * Interactively creates a context snapshot to resume work in a new chat
- * session. Triggered when the user feels the context is getting too long,
- * or automatically triggered by workflow Phase 0 when > 40% token budget.
+ * Interactively creates a context snapshot (human-driven), or accepts a
+ * pre-filled JSON payload via --auto for agent-driven compaction.
+ *
+ * Agent-driven usage:
+ *   agents-skills compact --auto '{"goal":"...","completed":[...],"remaining":[...],...}'
+ *
+ * JSON payload fields (all optional except goal + remaining):
+ *   goal, completed, remaining, decisions, filesModified, filesToReference, activeSkills, notes
  */
-async function compactCommand() {
+async function compactCommand(args = []) {
   const clack = require('@clack/prompts');
   const cwd   = process.cwd();
+
+  // ── Agent-driven mode (--auto) ─────────────────────────────────────────────
+  const autoIdx = args.indexOf('--auto');
+  if (autoIdx !== -1) {
+    const jsonArg = args[autoIdx + 1];
+    if (!jsonArg) {
+      console.error('compact --auto requires a JSON payload argument.');
+      process.exit(1);
+    }
+    let payload;
+    try {
+      payload = JSON.parse(jsonArg);
+    } catch {
+      console.error('compact --auto: invalid JSON payload.');
+      process.exit(1);
+    }
+
+    const agentsDir = path.join(cwd, '.agents');
+    const budget    = loadProfileBudget(cwd);
+    const compactor = new ContextCompactor(agentsDir);
+
+    const data = {
+      goal:             payload.goal             || '(no goal provided)',
+      completed:        _toArray(payload.completed),
+      remaining:        _toArray(payload.remaining),
+      decisions:        _toArray(payload.decisions),
+      filesModified:    _toArray(payload.filesModified),
+      filesToReference: _toArray(payload.filesToReference),
+      activeSkills:     _toArray(payload.activeSkills),
+      notes:            payload.notes || null,
+    };
+
+    const { filePath, tokens } = compactor.createSnapshot(data);
+    const pct = ((tokens / budget.budget) * 100).toFixed(1);
+    console.log(`Snapshot created: ${path.relative(cwd, filePath)} (${tokens.toLocaleString()} tokens, ${pct}% of budget)`);
+    return;
+  }
 
   const agentsDir = path.join(cwd, '.agents');
   const budget    = loadProfileBudget(cwd);
@@ -118,6 +160,16 @@ async function compactCommand() {
   console.log('');
   clack.outro(pc.green('✅ Copy the snapshot above into your next chat session to resume work.'));
   console.log('');
+}
+
+/**
+ * Normalise a payload field to a string array.
+ * Accepts: string (csv), array, or undefined/null.
+ */
+function _toArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.map(String).filter(Boolean);
+  return String(val).split(',').map(s => s.trim()).filter(Boolean);
 }
 
 module.exports = { compactCommand };

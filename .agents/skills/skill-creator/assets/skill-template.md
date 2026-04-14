@@ -1,71 +1,101 @@
-# SKILL.md Template
+# SKILL.md Template (v3 — 7-Section Anatomy)
 
-Use this template when generating a new skill. Replace all `{placeholders}` with the gathered information.
+Use this template when generating a new skill. All 7 sections are mandatory for first-party skills.
+Replace all `{placeholders}` with gathered information.
 
 ```markdown
 ---
 name: {skill-name}
-description: {trigger-description}
-metadata:
-  pattern: {pattern}
-  domain: {domain}
+description: {one-line trigger description for skill loader}
+version: 1.0.0
+category: process | technology
+optional: true | false
+phase: 0 | 1 | 2 | 4 | 5 | null
+dependencies: []
 ---
 
-# {emoji} {Skill Title}
+## 1. Trigger Conditions
 
-**Role**: You are an expert {role-description}.
+When to invoke this skill. Be specific — name keywords, user intents, and workflow phases.
 
-## 🎯 Primary Directives
+- {specific trigger 1}
+- {specific trigger 2}
 
-1. {directive-1}
-2. {directive-2}
-3. {directive-3}
+## 2. Prerequisites
 
----
+What must be true before starting. Gate conditions the agent must verify.
 
-## 🏗 Core Responsibilities & Workflows
+- {prerequisite 1}
+- {prerequisite 2}
 
-### 1. {Section Title}
+## 3. Steps
 
-{section-content}
+The actual process. Numbered, atomic, and verifiable.
 
-### 2. {Section Title}
+1. **{step name}**: {description — what to do, how to do it, what it produces}
 
-{section-content}
+2. **{step name}**: {description}
 
-## Gotchas
+3. **{step name}**: {description}
 
-1. **{gotcha-title}**: {gotcha-description}
-2. **{gotcha-title}**: {gotcha-description}
-3. **{gotcha-title}**: {gotcha-description}
+## 4. Anti-Rationalization Table
+
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "{common shortcut excuse}" | {why this is wrong and what to do instead} |
+| "{another excuse}" | {rebuttal} |
+| "{a third excuse}" | {rebuttal} |
+
+## 5. Red Flags
+
+Observable signs this skill is being violated.
+
+- {red flag 1 — specific observable symptom}
+- {red flag 2}
+- {red flag 3}
+
+## 6. Verification Gate
+
+Domain-specific checklist completed before marking this skill done.
+
+- [ ] {evidence item 1 — specific to this skill's domain}
+- [ ] {evidence item 2}
+- [ ] {evidence item 3}
+
+## 7. References
+
+- [{reference-file.md}](references/{reference-file.md}) — {description}
 ```
+
+---
 
 ## Pattern-Specific Additions
 
 ### If pattern = pipeline
 Add gate conditions between steps:
 ```markdown
-## Step 1 — {step-name}
-**Gate Condition:** DO NOT proceed to Step 2 until {condition}.
+### Step 1 — {step-name}
+{instructions}
+**Gate**: do not proceed to Step 2 until {condition}.
 ```
 
 ### If pattern = generator
-Add a template file reference:
+Add a template file reference in Step 3:
 ```markdown
 Load `assets/{template-name}` for the output format.
 ```
 
 ### If pattern = reviewer
-Add a checklist file reference:
+Add a checklist reference in Step 2:
 ```markdown
-Load `references/review-checklist.md` for the evaluation criteria.
+Load `references/review-checklist.md` for the complete evaluation criteria.
 ```
 
 ### If pattern = inversion
-Add multi-turn interview phases:
+Add multi-turn interview phases to Step 3:
 ```markdown
-## Phase 1 — {phase-name}
-**Gate Condition:** DO NOT proceed to Phase 2 until all questions are answered.
+### Phase 1 — {phase-name}
+**Gate**: do not proceed to Phase 2 until all questions answered.
 - Q1: "{question}"
 - Q2: "{question}"
 ```

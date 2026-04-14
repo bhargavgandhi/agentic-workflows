@@ -58,8 +58,12 @@ class VSCodeAdapter extends IDEAdapter {
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
     const { clack } = options;
-    const dest = path.join(baseDir, '.github', 'skills', skillName);
+    const dest = this.skillDir(baseDir, scope, skillName);
     await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
+
+  skillDir(baseDir, _scope, skillName) {
+    return path.join(baseDir, '.github', 'skills', skillName);
   }
 }
 

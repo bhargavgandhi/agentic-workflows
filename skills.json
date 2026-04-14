@@ -1,16 +1,28 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "3.0.0",
   "skills_directory": ".agents/skills",
   "skills": [
-    "api-integration",
-    "app-architect",
-    "backend-engineer",
+    "grill-me",
+    "context-engineering",
+    "write-a-prd",
+    "source-driven-development",
+    "prd-to-plan",
+    "incremental-implementation",
     "code-reviewer",
+    "test-writing",
+    "security-and-hardening",
+    "git-workflow",
+    "ci-cd-and-automation",
+    "skill-creator",
+    "performance-optimization",
+    "documentation-and-adrs",
     "debug-investigator",
-    "doc-coauthoring",
+    "deprecation-and-migration",
+    "context-health-check",
+    "api-integration",
+    "backend-engineer",
     "firebase-setup",
     "frontend-design",
-    "git-workflow",
     "graphql-backend",
     "graphql-frontend",
     "payload-cms",
@@ -20,129 +32,386 @@
     "react-native",
     "react-query",
     "rtk-query",
-    "skill-creator",
-    "test-writing"
+    "app-architect"
   ],
   "registry": {
-    "api-integration": {
+    "grill-me": {
       "version": "1.0.0",
-      "pattern": "tool-wrapper",
-      "tags": ["api", "redux", "firebase", "state"],
-      "dependencies": []
-    },
-    "app-architect": {
-      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 0,
+      "description": "Adversarial plan stress-testing before any code is written",
       "pattern": "inversion",
-      "tags": ["architecture", "planning", "requirements"],
-      "dependencies": []
+      "tags": ["planning", "validation", "adversarial", "requirements"],
+      "dependencies": [],
+      "packs": []
     },
-    "backend-engineer": {
+    "context-engineering": {
       "version": "1.0.0",
-      "pattern": "tool-wrapper",
-      "tags": ["backend", "nodejs", "api", "database", "microservices"],
-      "dependencies": []
+      "category": "process",
+      "optional": false,
+      "phase": 0,
+      "description": "Efficient context packing, compaction triggers, and agent-driven snapshots",
+      "pattern": "pipeline",
+      "tags": ["context", "compaction", "tokens", "snapshots"],
+      "dependencies": [],
+      "packs": []
+    },
+    "write-a-prd": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 1,
+      "description": "Produces a full PRD with user stories, success criteria, and scope boundaries",
+      "pattern": "pipeline",
+      "tags": ["prd", "planning", "requirements", "github-issue"],
+      "dependencies": ["grill-me"],
+      "packs": []
+    },
+    "source-driven-development": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 1,
+      "description": "Grounds every framework decision in official docs; no hallucinated API usage",
+      "pattern": "pipeline",
+      "tags": ["research", "sources", "documentation", "verification"],
+      "dependencies": [],
+      "packs": []
+    },
+    "prd-to-plan": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 2,
+      "description": "Turns a PRD into tracer-bullet implementation slices saved to ./plans/*.md",
+      "pattern": "pipeline",
+      "tags": ["planning", "slices", "implementation", "prd"],
+      "dependencies": ["write-a-prd"],
+      "packs": []
+    },
+    "incremental-implementation": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 2,
+      "description": "Implement → Test → Verify → Commit cycle discipline; no horizontal layers",
+      "pattern": "pipeline",
+      "tags": ["implementation", "tdd", "commits", "slices"],
+      "dependencies": ["prd-to-plan"],
+      "packs": []
     },
     "code-reviewer": {
-      "version": "1.0.0",
+      "version": "2.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 4,
+      "description": "Critique against project standards with anti-rationalization table and verification gate",
       "pattern": "reviewer",
       "tags": ["review", "quality", "pr", "checklist"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": []
+    },
+    "test-writing": {
+      "version": "2.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 4,
+      "description": "Vitest unit + Playwright E2E with TDD process guidance",
+      "pattern": "pipeline",
+      "tags": ["testing", "vitest", "jest", "unit", "integration", "tdd"],
+      "dependencies": [],
+      "packs": []
+    },
+    "security-and-hardening": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 4,
+      "description": "OWASP Top 10, auth patterns, secrets management, dependency auditing",
+      "pattern": "pipeline",
+      "tags": ["security", "owasp", "auth", "secrets", "hardening"],
+      "dependencies": [],
+      "packs": []
+    },
+    "git-workflow": {
+      "version": "2.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 5,
+      "description": "Branch naming, conventional commits, PR creation with 7-section anatomy",
+      "pattern": "pipeline",
+      "tags": ["git", "pr", "commits", "branches", "ci"],
+      "dependencies": [],
+      "packs": []
+    },
+    "ci-cd-and-automation": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 5,
+      "description": "Shift Left, quality gate pipelines, feature flags",
+      "pattern": "pipeline",
+      "tags": ["ci", "cd", "automation", "pipelines", "feature-flags"],
+      "dependencies": [],
+      "packs": []
+    },
+    "skill-creator": {
+      "version": "2.0.0",
+      "category": "process",
+      "optional": false,
+      "phase": 0,
+      "description": "Generates new skills enforcing 7-section anatomy with progressive disclosure",
+      "pattern": "inversion",
+      "tags": ["meta", "skills", "creation", "templates"],
+      "dependencies": [],
+      "packs": []
+    },
+    "performance-optimization": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": true,
+      "phase": 5,
+      "description": "Core Web Vitals, bundle analysis, profiling — measure-first approach",
+      "pattern": "pipeline",
+      "tags": ["performance", "web-vitals", "bundle", "profiling"],
+      "dependencies": [],
+      "packs": []
+    },
+    "documentation-and-adrs": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": true,
+      "phase": 5,
+      "description": "Architecture Decision Records, API docs, inline doc standards",
+      "pattern": "pipeline",
+      "tags": ["documentation", "adrs", "architecture", "api-docs"],
+      "dependencies": [],
+      "packs": []
     },
     "debug-investigator": {
       "version": "1.0.0",
+      "category": "process",
+      "optional": true,
+      "phase": null,
+      "description": "Root cause analysis via structured multi-step investigation",
       "pattern": "pipeline",
       "tags": ["debugging", "errors", "investigation", "performance"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": []
     },
-    "doc-coauthoring": {
+    "deprecation-and-migration": {
       "version": "1.0.0",
+      "category": "process",
+      "optional": true,
+      "phase": null,
+      "description": "Code-as-liability mindset, migration patterns, zombie code removal",
       "pattern": "pipeline",
-      "tags": ["documentation", "writing", "specs", "proposals"],
-      "dependencies": []
+      "tags": ["deprecation", "migration", "refactor", "cleanup"],
+      "dependencies": [],
+      "packs": []
+    },
+    "context-health-check": {
+      "version": "1.0.0",
+      "category": "process",
+      "optional": true,
+      "phase": null,
+      "description": "Live token budget monitoring and forward-planning for context load",
+      "pattern": "pipeline",
+      "tags": ["context", "tokens", "budget", "health"],
+      "dependencies": ["context-engineering"],
+      "packs": []
+    },
+    "api-integration": {
+      "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Connect UI components to Firebase or REST/GraphQL backends via Redux",
+      "pattern": "tool-wrapper",
+      "tags": ["api", "redux", "firebase", "state"],
+      "dependencies": [],
+      "packs": ["frontend-pack"]
+    },
+    "backend-engineer": {
+      "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Backend business logic, database models, robust APIs, microservice architecture",
+      "pattern": "tool-wrapper",
+      "tags": ["backend", "nodejs", "api", "database", "microservices"],
+      "dependencies": [],
+      "packs": ["backend-pack"]
     },
     "firebase-setup": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Firebase Auth, Firestore, and Storage conventions using the modular SDK",
       "pattern": "tool-wrapper",
       "tags": ["firebase", "auth", "firestore", "storage"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["firebase-pack"]
     },
     "frontend-design": {
       "version": "1.2.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Production-grade frontend interfaces with high design quality",
       "pattern": "tool-wrapper",
       "tags": ["ui", "css", "react", "design", "components"],
-      "dependencies": ["react-component-scaffolder"]
-    },
-    "git-workflow": {
-      "version": "1.0.0",
-      "pattern": "pipeline",
-      "tags": ["git", "pr", "commits", "branches", "ci"],
-      "dependencies": []
+      "dependencies": ["react-component-scaffolder"],
+      "packs": ["frontend-pack"]
     },
     "graphql-backend": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "GraphQL API backend, schemas, resolvers, DataLoader N+1 prevention",
       "pattern": "tool-wrapper",
       "tags": ["graphql", "apollo", "backend", "schema", "dataloader"],
-      "dependencies": ["backend-engineer"]
+      "dependencies": ["backend-engineer"],
+      "packs": ["graphql-pack", "backend-pack"]
     },
     "graphql-frontend": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Apollo Client setup, queries/mutations, cache invalidation",
       "pattern": "tool-wrapper",
       "tags": ["graphql", "apollo", "client", "cache", "fragments"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["graphql-pack"]
     },
     "payload-cms": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "PayloadCMS v3 — collections, globals, access control, hooks, Next.js integration",
       "pattern": "tool-wrapper",
       "tags": ["cms", "payload", "nextjs", "content", "collections"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": []
     },
     "playwright": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "End-to-end tests with Playwright — POM, selectors, network mocking, CI",
       "pattern": "pipeline",
       "tags": ["testing", "e2e", "playwright", "browser", "automation"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["testing-pack"]
     },
     "post-pr-review": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Post code review feedback as inline GitHub PR comments via gh CLI",
       "pattern": "tool-wrapper",
       "tags": ["review", "github", "pr", "inline-comments"],
-      "dependencies": ["code-reviewer"]
+      "dependencies": ["code-reviewer"],
+      "packs": []
     },
     "react-component-scaffolder": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Boilerplate for strict React Vite components with interfaces and folder structure",
       "pattern": "generator",
       "tags": ["react", "components", "scaffold", "boilerplate"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["react-pack", "frontend-pack"]
     },
     "react-native": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "React Native mobile apps — Expo, React Navigation, native modules, styling",
       "pattern": "tool-wrapper",
       "tags": ["react-native", "expo", "mobile", "navigation"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["react-pack", "mobile-pack"]
     },
     "react-query": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "TanStack Query conventions — queries, mutations, query key factories",
       "pattern": "tool-wrapper",
       "tags": ["react-query", "tanstack", "data-fetching", "cache"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["react-pack"]
     },
     "rtk-query": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "RTK Query data-fetching — endpoints, cache tags, optimistic updates",
       "pattern": "tool-wrapper",
       "tags": ["redux", "rtk-query", "state", "cache", "api"],
-      "dependencies": []
+      "dependencies": [],
+      "packs": ["react-pack"]
     },
-    "skill-creator": {
+    "app-architect": {
       "version": "1.0.0",
+      "category": "technology",
+      "optional": true,
+      "phase": null,
+      "description": "Plans a new software project via structured requirements interview before producing an architecture plan",
       "pattern": "inversion",
-      "tags": ["meta", "skills", "creation", "templates"],
-      "dependencies": []
-    },
-    "test-writing": {
-      "version": "1.0.0",
-      "pattern": "pipeline",
-      "tags": ["testing", "vitest", "jest", "unit", "integration"],
-      "dependencies": []
+      "tags": ["architecture", "planning", "requirements"],
+      "dependencies": [],
+      "packs": []
     }
-  }
+  },
+  "packs": [
+    {
+      "name": "react-pack",
+      "description": "All React-related skills",
+      "skills": ["react-query", "rtk-query", "react-native", "react-component-scaffolder"]
+    },
+    {
+      "name": "frontend-pack",
+      "description": "Frontend UI and API integration skills",
+      "skills": ["react-component-scaffolder", "frontend-design", "api-integration"]
+    },
+    {
+      "name": "graphql-pack",
+      "description": "GraphQL backend and frontend skills",
+      "skills": ["graphql-backend", "graphql-frontend"]
+    },
+    {
+      "name": "backend-pack",
+      "description": "Backend engineering skills",
+      "skills": ["backend-engineer", "graphql-backend"]
+    },
+    {
+      "name": "firebase-pack",
+      "description": "Firebase setup and integration",
+      "skills": ["firebase-setup"]
+    },
+    {
+      "name": "mobile-pack",
+      "description": "Mobile development skills",
+      "skills": ["react-native"]
+    },
+    {
+      "name": "testing-pack",
+      "description": "Testing skills — unit and E2E",
+      "skills": ["playwright", "test-writing"]
+    }
+  ]
 }

@@ -1,63 +1,129 @@
 ---
 name: skill-creator
-description: Creates new agent skills by interviewing the user, selecting the right design pattern, and generating a complete skill folder with SKILL.md, references/, and assets/. Use when the user says "create a skill", "new skill", "build a skill for", or "add a skill".
-metadata:
-  pattern: inversion
-  interaction: multi-turn
+description: Creates new agent skills by interviewing the user, selecting the right design pattern, and generating a complete skill folder with SKILL.md in 7-section anatomy, references/, and assets/.
+version: 2.0.0
+category: process
+optional: false
+phase: 0
+dependencies: []
 ---
 
-**Role**: You are a skill-creation wizard. You interview the user to understand what the skill should do, select the correct design pattern, and generate a production-ready skill folder that matches this repository's conventions. DO NOT generate any files until all phases are complete.
+## 1. Trigger Conditions
 
-## Phase 1 — Purpose & Trigger
+Invoke this skill when:
 
-**Gate Condition:** DO NOT proceed to Phase 2 until all 3 questions are answered.
+- User says "create a skill", "new skill", "build a skill for", or "add a skill"
+- `/skill-creator` slash command
+- A skill gap is detected (`build-feature` Phase 0) and no registry match exists
+- A technology or process pattern is repeatedly used but has no formalised skill
 
-Ask these questions in order. Wait for each answer.
+## 2. Prerequisites
 
-- Q1: "What task or technology should this skill help accomplish? (e.g., 'Write Tailwind CSS following our conventions', 'Debug performance issues', 'Set up Stripe payments')"
-- Q2: "When should an agent trigger this skill — what keywords or user intent should activate it? (e.g., 'when the user asks about Tailwind', 'when debugging perf regressions')"
-- Q3: "What is the skill name in kebab-case? (e.g., `tailwind-css`, `stripe-payments`, `perf-debugger`)"
+- A clear description of what the skill should do (gathered via interview if not provided)
+- `references/pattern-selector.md` loaded for pattern selection
+- `assets/skill-template.md` loaded for the SKILL.md scaffold
 
-## Phase 2 — Pattern Selection
+**Do NOT generate any files until all interview phases are complete.**
 
-**Gate Condition:** DO NOT proceed to Phase 3 until the pattern is confirmed.
+## 3. Steps
 
-Load `references/pattern-selector.md` and present the 5 pattern options to the user:
+### Phase 1 — Purpose & Trigger
 
-1. **Tool Wrapper** — Wraps an existing tool/framework's conventions (e.g., `firebase-setup`, `rtk-query`)
-2. **Pipeline** — Multi-step workflow with gate conditions between steps (e.g., `git-workflow`, `test-writing`)
-3. **Generator** — Produces files from templates (e.g., `react-component-scaffolder`)
-4. **Reviewer** — Evaluates existing code against a checklist (e.g., `code-reviewer`)
-5. **Inversion** — Drives a multi-turn interview before producing output (e.g., `app-architect`)
+**Gate**: do not proceed until all 3 questions are answered.
 
-Ask: "Based on what you described, I think this is a **[suggested pattern]**. Does that sound right, or would another pattern fit better?"
+Ask in order, waiting for each answer:
+- Q1: "What task or technology should this skill help accomplish? (e.g., 'Write Tailwind CSS following our conventions', 'Debug performance issues')"
+- Q2: "When should an agent trigger this skill — what keywords or user intent should activate it?"
+- Q3: "What is the skill name in kebab-case? (e.g., `tailwind-css`, `stripe-payments`)"
 
-## Phase 3 — Content Gathering
+### Phase 2 — Pattern Selection
 
-**Gate Condition:** DO NOT proceed to Phase 4 until all questions are answered.
+**Gate**: do not proceed until pattern is confirmed.
 
-- Q4: "What are the 3–5 most important rules or conventions the agent must follow when using this skill?"
-- Q5: "What are the top 3 mistakes (gotchas) that an agent commonly makes in this domain?"
-- Q6: "Should this skill have reference files? If so, what topics should they cover? (e.g., 'common patterns', 'gotchas', 'API examples')"
+Load `references/pattern-selector.md` and present the 5 patterns:
 
-## Phase 4 — Generation
+1. **Tool Wrapper** — wraps a framework's conventions (e.g., `firebase-setup`, `rtk-query`)
+2. **Pipeline** — multi-step workflow with gate conditions (e.g., `git-workflow`, `test-writing`)
+3. **Generator** — produces files from templates (e.g., `react-component-scaffolder`)
+4. **Reviewer** — evaluates code against a checklist (e.g., `code-reviewer`)
+5. **Inversion** — multi-turn interview before producing output (e.g., `skill-creator`)
 
-**Gate Condition:** DO NOT generate until Phase 3 is fully answered.
+Ask: "Based on what you described, I think this is a **[suggested pattern]**. Does that sound right, or would another fit better?"
 
-1. Load `references/naming-conventions.md` for folder/file naming rules.
-2. Load `assets/skill-template.md` for the SKILL.md scaffold.
-3. Load `references/quality-checklist.md` and use it to self-evaluate before presenting.
+### Phase 3 — Content Gathering
 
-Generate the following files:
+**Gate**: do not proceed until all 3 questions are answered.
+
+- Q4: "What are the 3–5 most important rules or conventions the agent must follow?"
+- Q5: "What are the top 3 mistakes (gotchas) an agent commonly makes in this domain?"
+- Q6: "Should this skill have reference files? If so, what topics should they cover?"
+
+### Phase 4 — Generation
+
+**Gate**: do not generate until Phase 3 is fully answered.
+
+1. Load `references/naming-conventions.md` for folder/file naming rules
+2. Load `assets/skill-template.md` for the SKILL.md scaffold
+3. Generate the skill using the **7-section anatomy** (mandatory for all first-party skills):
 
 ```
 .agents/skills/{skill-name}/
-├── SKILL.md                    ← From template, filled with gathered info
+├── SKILL.md          ← 7-section anatomy (see template)
 └── references/
-    ├── gotchas.md              ← From Q5 gotchas
-    └── {topic}.md              ← One file per reference topic from Q6
+    ├── gotchas.md    ← From Q5
+    └── {topic}.md   ← One per reference topic from Q6
 ```
 
-4. Present the generated files to the user.
-5. Ask: "Does this skill look correct? Would you like to adjust anything before we finalize?"
-6. After approval, load `references/quality-checklist.md` and confirm all items pass.
+**7-section anatomy required fields:**
+- Section 1: Trigger Conditions (specific, not vague)
+- Section 2: Prerequisites (gate conditions)
+- Section 3: Steps (numbered, atomic, verifiable)
+- Section 4: Anti-Rationalization Table (agent excuses + rebuttals)
+- Section 5: Red Flags (self-diagnosis prompts)
+- Section 6: Verification Gate (checklist before marking done)
+- Section 7: References (links to reference files)
+
+4. Present generated files to the user
+5. Ask: "Does this skill look correct? Would you like to adjust anything before we finalise?"
+6. After approval, load `references/quality-checklist.md` and confirm all items pass
+7. Write `.version` file with `1.0.0` into the skill directory
+
+## 4. Anti-Rationalization Table
+
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I have enough info to generate without asking all questions" | The interview is the quality gate. Skipping it produces shallow skills. |
+| "The 7-section anatomy is optional for simple skills" | It is not optional for first-party skills. All sections must be present. |
+| "I'll skip the Anti-Rationalization Table, it seems unnecessary" | The table is what prevents the skill from being ignored under pressure. It is mandatory. |
+| "I'll generate the skill and let the user refine it" | Generation without approval produces unreviewed skills. Present, confirm, then finalise. |
+
+## 5. Red Flags
+
+Signs this skill is being violated:
+
+- Files generated before Phase 3 questions are all answered
+- Generated SKILL.md missing one or more of the 7 sections
+- Anti-Rationalization Table not present or only has 1–2 entries
+- Verification Gate is a generic checklist, not specific to the skill's domain
+- `.version` file not written after generation
+
+## 6. Verification Gate
+
+Before marking skill creation complete:
+
+- [ ] All Phase 1–3 questions answered by the user
+- [ ] Pattern selected and confirmed
+- [ ] 7-section SKILL.md generated with all sections present
+- [ ] Anti-Rationalization Table has ≥ 3 entries specific to this skill's domain
+- [ ] Verification Gate has ≥ 3 domain-specific checklist items
+- [ ] Reference files generated for all topics from Q6
+- [ ] User approved the generated skill
+- [ ] `references/quality-checklist.md` evaluated and all items pass
+- [ ] `.version` file written (`1.0.0`)
+
+## 7. References
+
+- [pattern-selector.md](references/pattern-selector.md) — Pattern descriptions and selection guide
+- [naming-conventions.md](references/naming-conventions.md) — Folder and file naming rules
+- [quality-checklist.md](references/quality-checklist.md) — Pre-publish skill quality checklist
+- [assets/skill-template.md](assets/skill-template.md) — 7-section SKILL.md scaffold
