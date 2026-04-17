@@ -18,7 +18,7 @@ parameters:
 skills_required:
   - firebase-setup
   - frontend-design
-workflow: build_feature_agent
+workflow: build-feature
 tags: [auth, security, firebase, supabase]
 ---
 

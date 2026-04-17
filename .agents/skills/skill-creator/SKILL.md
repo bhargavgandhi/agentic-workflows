@@ -14,7 +14,7 @@ Invoke this skill when:
 
 - User says "create a skill", "new skill", "build a skill for", or "add a skill"
 - `/skill-creator` slash command
-- A skill gap is detected (`build-feature` Phase 0) and no registry match exists
+- A skill gap is detected (`/build-feature` Phase 0) and no registry match exists
 - A technology or process pattern is repeatedly used but has no formalised skill
 
 ## 2. Prerequisites

@@ -1,16 +1,18 @@
 ---
-description: Full lifecycle orchestration for building features — from adversarial validation through to PR creation. Chains all mandatory process skills with gate conditions. Invoke with /build-feature.
+description: Full lifecycle orchestration for building features — from adversarial validation through to PR creation. Chains all Core Skills with gate conditions. Invoke with /build-feature.
 version: 3.0.0
 ---
 
 # /build-feature — Master Workflow
 
-> Chains all mandatory process skills in the correct order with gate conditions between each phase.
+> Chains all Core Skills in the correct order with gate conditions between each phase.
 > Individual slash commands (e.g. `/grill-me`, `/implement`) can be invoked independently for power users.
+>
+> **For quick tasks** (bug fixes, small changes): use `/build-quick` instead — 4 phases, no PRD or plan.
 
 ---
 
-## Phase 0 — Skill Gap Detection + Context Load
+## Phase 0 — Skill Check + Context Load
 
 **Run before anything else.**
 
@@ -19,44 +21,34 @@ version: 3.0.0
 2. If found: load only the files and skills listed in it. Start from "Remaining Work". Skip to the listed phase.
 3. If not found: proceed to 0b
 
-### 0b. Skill Gap Detection
-Parse the task description to extract technology signals (framework names, library names, service names).
+### 0b. Core Skills Check (binary — no NLP)
 
-Check installed skills in `.agents/skills/` against the extracted signals.
+Check whether Core Skills are installed in `.agents/skills/`:
 
-Produce one of three outcomes:
-
-**OUTCOME A — All required skills present:**
+**OUTCOME A — Core Skills present:**
 ```
-All required skills are installed. Proceeding.
+Core Skills are installed. Proceeding.
 ```
 
-**OUTCOME B — Skills available in registry:**
+**OUTCOME B — Core Skills missing:**
 ```
-This task requires [skill-list].
-[N] skill(s) not installed. Options:
-  1. Install now: agents-skills install [skill-list]
-  2. Install via pack: agents-skills install [pack-name]  (if applicable)
-  3. Proceed without (agent uses training data — lower confidence)
+Core Skills are not fully installed.
+Run: npx agents-skills install
+Then re-run /build-feature.
 ```
-Wait for user choice before proceeding.
+Stop and exit if Outcome B. Do not proceed past this gate.
 
-**OUTCOME C — Skills not in registry:**
-```
-This task requires [technology] but no matching skill is in the registry.
-Options:
-  1. Create a new skill: /skill-creator
-  2. Proceed without (agent uses training data — lower confidence)
-```
-Wait for user choice before proceeding.
+> **Tech skills** are not checked here. Use `agents-skills list --registry` to browse
+> available tech skills and install them individually as needed.
 
 ### 0c. Minimal Context Load
 Load ONLY skills needed for Phase 1 (grill-me + write-a-prd + source-driven-development).
 Do NOT load all skills. Run `agents-skills tokens --budget` to confirm you are under 40% budget.
 
-**GATE**: budget under 40% and skill gap resolved → proceed to Phase 1
+**GATE**: Core Skills installed + budget under 40% → proceed to Phase 1
 
 ---
+
 
 ## Phase 1 — Adversarial Validation `/grill-me`
 

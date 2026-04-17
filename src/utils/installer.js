@@ -17,6 +17,7 @@ function ensureDir(dir) {
  * @param {string} label    — display label
  */
 async function smartCopy(src, dest, clack, label) {
+  if (path.resolve(src) === path.resolve(dest)) return; // same-dir installs (dev mode)
   if (fs.existsSync(dest)) {
     const action = await clack.select({
       message: `Conflict detected for ${label}: ${path.basename(dest)} exists.`,

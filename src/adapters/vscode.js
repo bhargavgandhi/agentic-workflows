@@ -6,9 +6,10 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 /**
  * VS Code / GitHub Copilot adapter.
  *
- * rules/project_standards.md → .github/copilot-instructions.md
+ * rules/project-standards.md → .github/copilot-instructions.md
  * rules/* (rest)        → .github/rules/
  * skills/               → .github/skills/
+ * commands/             → .github/instructions/
  * workflows/            → .github/agents/
  * hooks/                → .github/hooks/
  */
@@ -28,8 +29,8 @@ class VSCodeAdapter extends IDEAdapter {
     // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      // project_standards.md → .github/copilot-instructions.md
-      const globalRules = path.join(rulesDir, 'project_standards.md');
+      // project-standards.md → .github/copilot-instructions.md
+      const globalRules = path.join(rulesDir, 'project-standards.md');
       if (fs.existsSync(globalRules)) {
         await smartCopy(globalRules, path.join(targetDir, 'copilot-instructions.md'), clack, 'VS Code Instructions');
       }
@@ -38,7 +39,7 @@ class VSCodeAdapter extends IDEAdapter {
       const githubRulesDir = path.join(targetDir, 'rules');
       ensureDir(githubRulesDir);
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'project_standards.md') continue;
+        if (file === 'project-standards.md') continue;
         await smartCopy(path.join(rulesDir, file), path.join(githubRulesDir, file), clack, 'VS Code Rule');
       }
     }
@@ -54,6 +55,14 @@ class VSCodeAdapter extends IDEAdapter {
     // 4. Hooks → .github/hooks/
     const hooksSrc = path.join(sourceDir, 'hooks');
     await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'VS Code Hook');
+
+    // 5. Commands → .github/instructions/
+    const commandsSrc = path.join(sourceDir, 'commands');
+    await smartCopyFolder(commandsSrc, path.join(targetDir, 'instructions'), clack, 'VS Code Command');
+
+    // 6. Recipes → .github/recipes/
+    const recipesSrc = path.join(sourceDir, 'recipes');
+    await smartCopyFolder(recipesSrc, path.join(targetDir, 'recipes'), clack, 'VS Code Recipe');
   }
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {

@@ -23,7 +23,7 @@ skills_required:
   - react-component-scaffolder
   - frontend-design
   - api-integration
-workflow: build_feature_agent
+workflow: build-feature
 tags: [crud, list, form, entity, firebase, api]
 ---
 

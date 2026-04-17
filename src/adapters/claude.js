@@ -6,9 +6,10 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 /**
  * Claude Code adapter.
  *
- * rules/project_standards.md → CLAUDE.md (root)
+ * rules/project-standards.md → CLAUDE.md (root)
  * rules/* (rest)        → .claude/rules/
  * skills/               → .claude/skills/
+ * commands/             → .claude/commands/
  * workflows/            → .claude/agents/
  * hooks/                → .claude/hooks/
  */
@@ -25,17 +26,17 @@ class ClaudeAdapter extends IDEAdapter {
     const targetDir = path.join(baseDir, '.claude');
     ensureDir(targetDir);
 
-    // 1. Rules: project_standards.md → CLAUDE.md, rest → .claude/rules/
+    // 1. Rules: project-standards.md → CLAUDE.md, rest → .claude/rules/
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      const globalRules = path.join(rulesDir, 'project_standards.md');
+      const globalRules = path.join(rulesDir, 'project-standards.md');
       if (fs.existsSync(globalRules)) {
         await smartCopy(globalRules, path.join(baseDir, 'CLAUDE.md'), clack, 'Claude Instructions');
       }
       const claudeRulesDir = path.join(targetDir, 'rules');
       ensureDir(claudeRulesDir);
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'project_standards.md') continue;
+        if (file === 'project-standards.md') continue;
         await smartCopy(path.join(rulesDir, file), path.join(claudeRulesDir, file), clack, 'Claude Rule');
       }
     }
@@ -51,6 +52,14 @@ class ClaudeAdapter extends IDEAdapter {
     // 4. Hooks → .claude/hooks/
     const hooksSrc = path.join(sourceDir, 'hooks');
     await smartCopyFolder(hooksSrc, path.join(targetDir, 'hooks'), clack, 'Claude Hook');
+
+    // 5. Commands → .claude/commands/
+    const commandsSrc = path.join(sourceDir, 'commands');
+    await smartCopyFolder(commandsSrc, path.join(targetDir, 'commands'), clack, 'Claude Command');
+
+    // 6. Recipes → .claude/recipes/
+    const recipesSrc = path.join(sourceDir, 'recipes');
+    await smartCopyFolder(recipesSrc, path.join(targetDir, 'recipes'), clack, 'Claude Recipe');
   }
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
