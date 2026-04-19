@@ -10,8 +10,9 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
  * Local: 1:1 copy into .agents/
  * Global:
  *  - Skills → ~/.gemini/antigravity/skills/
+ *  - Commands → ~/.gemini/antigravity/commands/
  *  - Workflows → ~/.gemini/antigravity/global_workflows/
- *  - Rules → ~/.gemini/GEMINI.md (only global-rules.md)
+ *  - Rules → ~/.gemini/GEMINI.md (only project-standards.md)
  */
 class AntigravityAdapter extends IDEAdapter {
   get name() { return 'Antigravity'; }
@@ -37,8 +38,8 @@ class AntigravityAdapter extends IDEAdapter {
       
       ensureDir(antigravityDir);
 
-      // 1. Process Rules (only project_standards.md → GEMINI.md)
-      const globalRuleSrc = path.join(sourceDir, 'rules', 'project_standards.md');
+      // 1. Process Rules (only project-standards.md → GEMINI.md)
+      const globalRuleSrc = path.join(sourceDir, 'rules', 'project-standards.md');
       if (fs.existsSync(globalRuleSrc)) {
         const geminiMdDest = path.join(geminiDir, 'GEMINI.md');
         await smartCopy(globalRuleSrc, geminiMdDest, clack, 'Global Rule');
@@ -54,12 +55,22 @@ class AntigravityAdapter extends IDEAdapter {
       const workflowsDest = path.join(antigravityDir, 'global_workflows');
       await smartCopyFolder(workflowsSrc, workflowsDest, clack, 'Global Workflow');
 
+      // 4. Commands → ~/.gemini/antigravity/commands/
+      const commandsSrc = path.join(sourceDir, 'commands');
+      const commandsDest = path.join(antigravityDir, 'commands');
+      await smartCopyFolder(commandsSrc, commandsDest, clack, 'Global Command');
+
+      // 5. Recipes → ~/.gemini/antigravity/recipes/
+      const recipesSrc = path.join(sourceDir, 'recipes');
+      const recipesDest = path.join(antigravityDir, 'recipes');
+      await smartCopyFolder(recipesSrc, recipesDest, clack, 'Global Recipe');
+
     } else {
       // Local install: 1:1 copy into .agents/
       const targetDir = path.join(baseDir, '.agents');
       ensureDir(targetDir);
 
-      for (const folder of ['rules', 'skills', 'workflows', 'hooks']) {
+      for (const folder of ['rules', 'skills', 'commands', 'workflows', 'hooks', 'recipes']) {
         const src = path.join(sourceDir, folder);
         if (!fs.existsSync(src)) continue;
         const dest = path.join(targetDir, folder);
@@ -72,13 +83,15 @@ class AntigravityAdapter extends IDEAdapter {
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
     const { clack } = options;
-    let dest;
-    if (scope === 'global') {
-      dest = path.join(os.homedir(), '.gemini', 'antigravity', 'skills', skillName);
-    } else {
-      dest = path.join(baseDir, '.agents', 'skills', skillName);
-    }
+    const dest = this.skillDir(baseDir, scope, skillName);
     await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
+
+  skillDir(baseDir, scope, skillName) {
+    if (scope === 'global') {
+      return path.join(os.homedir(), '.gemini', 'antigravity', 'skills', skillName);
+    }
+    return path.join(baseDir, '.agents', 'skills', skillName);
   }
 }
 

@@ -1,39 +1,106 @@
 ---
 name: react-component-scaffolder
-description: Generates boilerplate for strict React Vite components with proper interfaces, default props, and folder structure.
-metadata:
-  pattern: generator
+description: Generates strict React Vite component boilerplate — folder structure, typed interfaces, index barrel, and cn() utility usage.
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: []
 ---
 
-# React Component Scaffolder Skill
+## 1. Trigger Conditions
 
-**Role**: You are a Boilerplate Generator specialized in strict React components.
+Invoke this skill when:
 
-**When to use**: When requested to create a new UI component in this repo.
+- Creating a new React UI component
+- A component needs to be scaffolded to project conventions
+- `frontend-design` generates a new component (this skill provides the structure)
 
-## The Template Protocol
+## 2. Prerequisites
 
-1. **Folder Structure**: Every new component MUST be placed in its own folder named in `PascalCase`.
-   - `ComponentName/`
-     - `ComponentName.tsx`
-     - `index.ts`
-     - `ComponentName.types.ts` (Required ONLY if the interface exceeds 5 properties, otherwise keep in `.tsx`).
+- Project uses React + TypeScript + Vite
+- `cn()` utility available (from `class-variance-authority` or `clsx`/`tailwind-merge`)
+- `assets/Component.tsx` template available
 
-2. **File References**:
-   Read the standard template file located at `assets/Component.tsx`. You **must** copy this exact structure when generating the component.
+## 3. Steps
 
-3. **Strict Rules**:
-   - Use `function Component() {}` over `const Component = () => {}` for the main export to improve React DevTools readability.
-   - All props MUST be explicitly defined in an `interface` (never `type`).
-   - Use the `cn()` utility for tailwind class merging.
-   - Do not use React.FC.
+### Step 1: Determine the Component Name
+Name must be `PascalCase`. Confirm with the user if unclear.
 
-## Gotchas
+### Step 2: Create the Folder Structure
+Every component lives in its own `PascalCase/` folder:
+```
+ComponentName/
+├── ComponentName.tsx        ← Main component
+├── index.ts                 ← Barrel export
+└── ComponentName.types.ts   ← Only if props interface > 5 properties
+```
 
-1. **Missing `index.ts` barrel file**: Always generate the `index.ts` so the component can be imported cleanly from its directory.
-2. **Using `type` instead of `interface`**: Interfaces are the standard in this repo; `type` should only be used for unions.
-3. **Forgetting to export**: Check that the main component function is the default export (or a named export if standard dictates).
+### Step 3: Generate `ComponentName.tsx`
+Copy the structure from `assets/Component.tsx`. Key rules:
+- Use `function ComponentName()` — not `const ComponentName = () => {}` (improves React DevTools readability)
+- All props defined in an `interface` (not `type`) — `type` is only for unions
+- Do not use `React.FC`
+- Use `cn()` for conditional Tailwind class merging
 
-## Output Action
+```tsx
+import { cn } from '@/utils/cn';
 
-Output only the file paths created and the final confirmation to the user.
+interface ComponentNameProps {
+  className?: string;
+  // ...props
+}
+
+export function ComponentName({ className, ...props }: ComponentNameProps) {
+  return (
+    <div className={cn('base-classes', className)}>
+      {/* content */}
+    </div>
+  );
+}
+```
+
+### Step 4: Generate `index.ts`
+```ts
+export { ComponentName } from './ComponentName';
+export type { ComponentNameProps } from './ComponentName';
+```
+
+### Step 5: Confirm Output
+Report only the file paths created and a final confirmation to the user.
+
+## 4. Anti-Rationalization Table
+
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll skip the `index.ts`, the component can be imported directly" | Missing barrel file breaks consistent import paths. Always generate it. |
+| "I'll use `type` for the props — it's equivalent to `interface`" | `interface` is the project standard. `type` is only for unions. |
+| "I'll use `React.FC` for explicit typing" | `React.FC` implicitly includes `children` and has subtle typing issues. Use explicit prop interfaces. |
+| "I'll inline the styles as a style object" | Inline styles bypass Tailwind's purge. Use `cn()` with class strings. |
+
+## 5. Red Flags
+
+Signs this skill is being violated:
+
+- Component file at root level instead of inside a `PascalCase/` folder
+- No `index.ts` barrel file generated
+- `const Component = () => {}` instead of `function Component() {}`
+- Props defined with `type` instead of `interface`
+- `React.FC` used
+- Inline `style={{}}` objects instead of `cn()` with Tailwind classes
+
+## 6. Verification Gate
+
+Before marking scaffolding complete:
+
+- [ ] Component in its own `PascalCase/` folder
+- [ ] `ComponentName.tsx` uses `function` declaration, not arrow function
+- [ ] Props defined as `interface`, not `type`
+- [ ] `React.FC` not used
+- [ ] `cn()` used for Tailwind class merging
+- [ ] `index.ts` barrel file created with correct exports
+- [ ] `ComponentName.types.ts` created only if props > 5 properties
+
+## 7. References
+
+- [assets/Component.tsx](assets/Component.tsx) — Standard component template

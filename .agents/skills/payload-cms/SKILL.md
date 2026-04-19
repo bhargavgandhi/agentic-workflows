@@ -1,108 +1,117 @@
 ---
 name: payload-cms
-description: Trigger this skill when the user asks about PayloadCMS — collections, globals, fields, access control, hooks, Next.js integration, media/image uploads, block editor, document handling, or email. Deep expertise in Payload v3 with Next.js App Router.
-metadata:
-  pattern: tool-wrapper
-  domain: payload-cms-nextjs
+description: PayloadCMS v3 — collections, globals, fields, access control, hooks, Next.js integration, media uploads, and email.
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: []
 ---
 
-# 🧩 PayloadCMS Expert Skill
+## 1. Trigger Conditions
 
-**Role**: You are an expert PayloadCMS engineer with deep knowledge of Payload v3, its Next.js integration, and the full CMS surface area — collections, globals, types, hooks, access control, rich text, media, and email.
+Invoke this skill when:
 
-## 🎯 Primary Directives
+- Defining or modifying Payload collections, globals, or fields
+- Implementing access control on a collection or field
+- Writing collection hooks (`beforeChange`, `afterChange`, `beforeRead`)
+- Integrating Payload data with Next.js Server Components or Route Handlers
+- Setting up media uploads, rich text (Lexical), or email
 
-1. **Version**: Always target **Payload v3** (the Next.js-native version). If the user has v2, flag it explicitly.
-2. **Integration**: Payload v3 runs *inside* the Next.js App Router — the CMS backend, admin UI, and frontend share the same process.
-3. **Type Safety**: Payload auto-generates TypeScript types from collection configs. Always use generated types from `payload-types.ts`. Never hand-write collection types.
-4. **Schema-First**: All data modeling starts from collection/global configs in `payload.config.ts`. The database schema, admin UI, and API are all derived from this single source.
+## 2. Prerequisites
 
----
+- Payload v3 confirmed (not v2 — the API is different)
+- Next.js App Router project
+- `references/` files available
 
-## 🏗 Core Responsibilities & Workflows
+## 3. Steps
 
-### 1. Collections & Globals
-
-Load `references/collections-patterns.md` for conventions.
+### Step 1: Schema-First Modelling
+All data modelling starts from collection/global configs in `payload.config.ts`. The database schema, admin UI, and REST/GraphQL API are all derived from this source.
 
 - **Collections** = repeatable content (Posts, Users, Products, Media)
 - **Globals** = singleton content (Site Settings, Nav, Footer)
-- Every collection needs a `slug` (kebab-case), an `admin.useAsTitle` field, and explicit `access` controls.
-- Always define `timestamps: true` to get `createdAt` / `updatedAt` automatically.
+- Every collection needs: `slug` (kebab-case), `admin.useAsTitle`, `timestamps: true`, and explicit `access` controls
 
-### 2. Fields & TypeScript Types
+Load `references/collections-patterns.md` for naming and field conventions.
 
-Load `references/fields-and-types.md` for field definitions and generated type usage.
+### Step 2: Types — Always Use Generated
+Run `npx payload generate:types` after any schema change. Use generated types:
+```ts
+import type { Post, Media, User } from '@/payload-types';
+```
+Never hand-write collection types. Load `references/fields-and-types.md`.
 
-- Payload generates `payload-types.ts` automatically — run `npx payload generate:types` after schema changes.
-- Use the generated types: `import type { Post, Media, User } from '@/payload-types'`
-- For relationships, use the `relationship` field with `relationTo` pointing to a collection slug.
-- For polymorphic relationships, `relationTo` accepts an array of slugs.
-
-### 3. Media, Images & File Uploads
-
-Load `references/media-patterns.md` for upload field, image sizing, and serving conventions.
-
-- Use the `upload` field type for media collections. Configure `imageSizes` for responsive variants.
-- Images are served via `/api/media/file/[filename]` by default, or via a custom static handler.
-- For Next.js `<Image>`, configure the hostname in `next.config.js` and use the Payload media URL helper.
-- Store files in cloud (S3/Cloudflare R2) via `@payloadcms/storage-s3` or equivalent adapter.
-
-### 4. Rich Text & Block Editor
-
-Load `references/rich-text-blocks.md` for Lexical editor setup and block patterns.
-
-- Payload v3 uses **Lexical** as its rich text editor (not Slate).
-- Define blocks as standalone configs then register them in `editor: lexicalEditor({ features: [...] })`.
-- To render Lexical content on the frontend, use `@payloadcms/richtext-lexical/react` `<RichText>` component or the `convertLexicalToHTML` utility.
-- For custom blocks in rich text, define a `BlocksFeature` with your block configs.
-
-### 5. Access Control
-
-- Access functions receive `{ req: { user } }` — always type `user` as `User | null`.
-- For row-level access: return a `where` query object instead of a boolean.
-- Separate read vs write access: public can read published content, authenticated users can write.
-
-```typescript
-// Example: public read, authenticated write
+### Step 3: Access Control
+- Access functions receive `{ req: { user } }` — type `user` as `User | null`
+- For row-level filtering: return a `where` query, not `false` (returning `false` blocks the entire collection)
+- Separate read vs write access explicitly:
+```ts
 access: {
   read: () => true,
   create: ({ req: { user } }) => Boolean(user),
-  update: ({ req: { user } }) => Boolean(user),
   delete: ({ req: { user } }) => user?.role === 'admin',
 },
 ```
 
-### 6. Hooks
+### Step 4: Hooks
+- `beforeChange`: mutate/validate data before saving — always return `data`
+- `afterChange`: trigger side effects (ISR revalidation, email, webhooks)
+- `beforeRead`/`afterRead`: transform data for API output
+- Call `revalidatePath()` or `revalidateTag()` in `afterChange` to trigger Next.js ISR
 
-- Use `beforeChange` to mutate/validate data before saving.
-- Use `afterChange` to trigger side effects (revalidation, emails, webhooks).
-- Use `beforeRead` / `afterRead` to transform data for API output.
-- Always return the `data` from `beforeChange` hooks.
+### Step 5: Next.js Integration
+Use `getPayload({ config })` in Server Components and Route Handlers:
+```ts
+const payload = await getPayload({ config });
+const posts = await payload.find({ collection: 'posts', depth: 1 });
+```
+Pass `depth: 1` (or higher) to auto-populate relationship fields — default `depth: 0` returns IDs only.
+Load `references/nextjs-integration.md`.
 
-### 7. Next.js Integration
+### Step 6: Media & Rich Text
+- Media: configure `imageSizes` in the upload collection for responsive variants. Use cloud storage (`@payloadcms/storage-s3`) in production.
+- Rich text: Payload v3 uses **Lexical** (not Slate). Render with `<RichText>` component or `convertLexicalToHTML` — never `dangerouslySetInnerHTML` raw Lexical JSON.
+Load `references/media-patterns.md` and `references/rich-text-blocks.md`.
 
-Load `references/nextjs-integration.md` for App Router conventions.
+## 4. Anti-Rationalization Table
 
-- Payload v3 exports a `getPayload({ config })` function — use this in Server Components and Route Handlers.
-- Use `payload.find()`, `payload.findByID()`, `payload.create()`, `payload.update()` for data access.
-- Call `revalidatePath()` or `revalidateTag()` in `afterChange` hooks to trigger ISR.
-- The admin panel lives at `/admin` by default — it's a Next.js App Router sub-app.
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll use `req.payload` like in v2" | `req.payload` is v2. In v3, use `getPayload({ config })`. This is a breaking change. |
+| "I'll hand-write the TypeScript types for this collection" | Generated types stay in sync with the schema. Hand-written types drift. Run the generator. |
+| "I'll return `false` from the read access function to hide some docs" | `false` blocks the entire collection for that user. Return a `where` query for row-level filtering. |
+| "I'll render Lexical content with `dangerouslySetInnerHTML`" | Lexical JSON is not HTML. Use `<RichText>` or `convertLexicalToHTML`. |
+| "The page will update after the CMS edit automatically" | Next.js caches aggressively. Always call `revalidatePath` in `afterChange`. |
 
-### 8. Email Integration
+## 5. Red Flags
 
-Load `references/email-patterns.md` for transactional email setup.
+Signs this skill is being violated:
 
-- Configure email via `email` key in `payload.config.ts` using a transport adapter (`@payloadcms/email-nodemailer` or `@payloadcms/email-resend`).
-- Use `payload.sendEmail()` for transactional emails (welcome, reset password, notifications).
-- Payload has built-in auth email flows (verify email, reset password) — configure templates to override defaults.
+- `req.payload` used in a v3 project
+- Hand-written TypeScript types for collections instead of generated types
+- Access function returns `false` instead of a `where` query for row-level access
+- `dangerouslySetInnerHTML` used to render Lexical content
+- `depth: 0` (default) used when relationship data is needed
+- No `revalidatePath` call in `afterChange` hooks in a Next.js project
 
-## Gotchas
+## 6. Verification Gate
 
-1. **Using old v2 patterns in v3**: `req.payload` is now `getPayload({ config })`. Never use `req.payload` in v3 server contexts — call `getPayload` directly.
-2. **Hand-writing collection types**: Always use auto-generated types from `payload-types.ts`. After any schema change, run `npx payload generate:types`.
-3. **Serving media in Next.js**: The default `/api/media/file/[filename]` route can conflict with Next.js static optimization. Configure a dedicated `staticDir` or use cloud storage for production.
-4. **Lexical content rendering**: Trying to render Lexical JSON as plain HTML. Always use the `<RichText>` component or `convertLexicalToHTML` — never stringify and dangerouslySetInnerHTML Lexical JSON directly.
-5. **Missing `depth` in queries**: Relationships return IDs by default. Pass `depth: 1` (or higher) to `payload.find()` to auto-populate relationship fields.
-6. **Access control returning `false` vs `where`**: Returning `false` from a read access function blocks the entire collection. Return a `where` query for row-level filtering (e.g., only show published docs).
-7. **Forgetting `revalidatePath`**: After CMS updates, Next.js pages still serve cached data. Always call `revalidatePath()` or `revalidateTag()` in an `afterChange` hook.
+Before marking Payload CMS work complete:
+
+- [ ] `getPayload({ config })` used — not `req.payload`
+- [ ] `npx payload generate:types` run after schema changes; generated types used
+- [ ] Access controls defined on every collection
+- [ ] Row-level access uses `where` query, not boolean `false`
+- [ ] `afterChange` hooks call `revalidatePath`/`revalidateTag` for Next.js pages
+- [ ] Lexical rich text rendered via `<RichText>` or `convertLexicalToHTML`
+- [ ] `depth` parameter set explicitly on `payload.find()` calls that need populated relationships
+
+## 7. References
+
+- [collections-patterns.md](references/collections-patterns.md) — Collection and global conventions
+- [fields-and-types.md](references/fields-and-types.md) — Field definitions and generated type usage
+- [media-patterns.md](references/media-patterns.md) — Upload fields, image sizes, cloud storage
+- [rich-text-blocks.md](references/rich-text-blocks.md) — Lexical editor and block patterns
+- [nextjs-integration.md](references/nextjs-integration.md) — App Router integration patterns
+- [email-patterns.md](references/email-patterns.md) — Transactional email setup

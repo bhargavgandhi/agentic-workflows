@@ -46,17 +46,16 @@ async function initCommand(args = []) {
   const modelChoice = await clack.select({
     message: 'Which AI model do you primarily use? (sets token budget)',
     options: [
-      { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', hint: '200k tokens → 80k budget (40%)' },
-      { value: 'claude-opus-4-20250514',   label: 'Claude Opus 4',   hint: '200k tokens → 80k budget (40%)' },
-      { value: 'gpt-4o',                   label: 'GPT-4o',          hint: '128k tokens → 51k budget (40%)' },
-      { value: 'gemini-2.5-pro',           label: 'Gemini 2.5 Pro',  hint: '1M tokens → 400k budget (40%)' },
-      { value: 'gemini-2.5-flash',         label: 'Gemini 2.5 Flash', hint: '1M tokens → 400k budget (40%)' },
-      { value: 'custom',                   label: 'Custom / Other',   hint: 'Set your own context window size' },
+      { value: 'model-agnostic',            label: 'Model-agnostic (recommended)', hint: '128k default — works with any model' },
+      { value: 'claude-sonnet-4-20250514',  label: 'Claude Sonnet/Opus 4',         hint: '200k tokens → 80k budget (40%)' },
+      { value: 'gpt-4o',                    label: 'GPT-4o',                        hint: '128k tokens → 51k budget (40%)' },
+      { value: 'gemini-2.5-pro',            label: 'Gemini 2.5 Pro/Flash',          hint: '1M tokens → 400k budget (40%)' },
+      { value: 'custom',                    label: 'Custom',                         hint: 'Set your own context window size' },
     ],
   });
   if (clack.isCancel(modelChoice)) { clack.cancel('Cancelled.'); process.exit(0); }
 
-  let contextWindow = 200000;
+  let contextWindow = 128000; // model-agnostic default
   if (modelChoice === 'custom') {
     const customWindow = await clack.text({
       message: 'Enter your model\'s context window size (in tokens):',
@@ -70,20 +69,19 @@ async function initCommand(args = []) {
     contextWindow = parseInt(customWindow, 10);
   } else {
     const windowMap = {
+      'model-agnostic':           128000,
       'claude-sonnet-4-20250514': 200000,
-      'claude-opus-4-20250514': 200000,
-      'gpt-4o': 128000,
-      'gemini-2.5-pro': 1000000,
-      'gemini-2.5-flash': 1000000,
+      'gpt-4o':                   128000,
+      'gemini-2.5-pro':           1000000,
     };
-    contextWindow = windowMap[modelChoice] || 200000;
+    contextWindow = windowMap[modelChoice] ?? 128000;
   }
 
   const budgetPercent = 40;
   const budgetTokens  = Math.floor(contextWindow * budgetPercent / 100);
 
   profile.tokenBudget = {
-    model: modelChoice === 'custom' ? 'custom' : modelChoice,
+    model: modelChoice,
     contextWindow,
     budgetPercent,
     budgetTokens,

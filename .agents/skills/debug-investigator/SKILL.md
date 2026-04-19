@@ -1,89 +1,129 @@
 ---
 name: debug-investigator
-description: Takes a symptom (error message, Slack thread, screenshot, network error) and walks through a structured multi-step investigation to find the root cause. Use when debugging complex issues, errors, or performance regressions.
-metadata:
-  pattern: pipeline
-  steps: "5"
+description: Structured root-cause investigation for bugs, errors, and performance regressions. Takes a symptom and produces a verified fix with a debug report.
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: []
 ---
 
-> [!IMPORTANT]
-> **AI Communication Mandate:**
->
-> 1. **Assume Non-Technical User:** Accept bug reports in plain English (e.g., "The button is jumping") without demanding file names.
-> 2. **Plain English Explanations:** When explaining the root cause or fix, explain the _behavioral_ reason, avoiding excessive technical jargon.
-> 3. **Be Autonomous:** Use your tools to hunt down the affected files based on the user's description.
+## 1. Trigger Conditions
 
-You are running a structured debugging pipeline. Execute each step in order. Do NOT skip steps or proceed if a step fails.
+Invoke this skill when:
 
-## Step 1 — Reproduce & Understand
+- A bug, error, or regression is reported (error message, Slack thread, screenshot, network trace)
+- A test is failing with no obvious cause
+- A performance regression is observed and needs root-cause analysis
+- The user says "debug this", "why is X broken", or "investigate this issue"
 
-Gather information about the symptom (the user's error message, log trace, or visual bug).
+## 2. Prerequisites
+
+- Symptom clearly described (error message, screenshot, or behavioral description)
+- Access to the affected codebase
+- Lint and typecheck commands available (`npm run lint`, `npx tsc --noEmit`)
+
+## 3. Steps
+
+### Step 1: Reproduce and Understand
+Gather the symptom — do not start searching code until the failure is understood:
 
 - What is the **expected** behavior?
-- What is the **actual** behavior? Are there error messages?
-- Which specific component, route, or API is affected?
-- What are the inputs/arguments causing the failure?
+- What is the **actual** behavior (error message, stack trace, or visual diff)?
+- Which component, route, or API is affected?
+- What inputs or conditions trigger the failure?
 
-Locate the code: use `grep_search` with keywords from the error message or affected component name. Use `view_file` only on the relevant line ranges.
+Use `grep` with keywords from the error message or component name to locate the affected file. Read only the relevant line ranges.
 
-DO NOT proceed to Step 2 until you have isolated the exact file and lines failing.
+**Gate**: Do not proceed to Step 2 until the exact file and failing lines are identified.
 
-## Step 2 — Trace & Isolate
+### Step 2: Trace and Isolate the Root Cause
+Follow the execution path from symptom to source:
 
-Follow the execution path.
+- Trace data flow: Where does the data originate? Where is it transformed? Where does it break?
+- Find all usages of the affected symbol — is it a shared component or utility?
+- Apply the **5-Whys Technique**:
 
-- Load `references/investigation-playbook.md` for tracing techniques.
-- Trace the data flow: Where does the data come from? Where is it transformed? Where is it rendered?
-- Run `grep_search` to find all imports/usages of the affected symbol. Is this a shared component?
-- Trace the variables leading up to the crash. Identify null pointers, invalid types, or unexpected async behavior.
+```
+Why is the bug happening?       → State is undefined
+Why is the state undefined?     → The hook fires before data loads
+Why does the hook fire early?   → useEffect has no dependency guard
+Why wasn't it caught earlier?   → No loading state check before render
+Root cause: Missing guard on async data access
+```
 
-Apply the **5-Whys Technique**:
-1. _Why is the bug happening?_ (e.g., "The state is undefined")
-2. _Why is the state undefined?_
-3. _Why did that happen?_
-4. _Why wasn't it caught earlier?_
-5. _Root cause identified._
+Document the root cause in one sentence before writing any code.
 
-**Document the root cause** in a brief summary before proceeding to the fix.
+**Gate**: Do not proceed to Step 3 until the root cause is documented.
 
-DO NOT proceed to Step 3 until you understand the ROOT CAUSE.
+### Step 3: Propose the Fix
+Design a fix that resolves the root cause — not just the symptom:
 
-## Step 3 — Propose Fix
+- Present the change in diff format
+- Explain why the fix resolves the root cause (not just what changed)
+- If a shared file is modified, verify all consumers still compile
+- Confirm the fix with the user before applying it
 
-Design a fix that resolves the root cause, not just the symptom.
+**Gate**: Do not proceed to Step 4 until the user approves the fix.
 
-- Present the proposed code changes in diff format.
-- Explain WHY this fixes the state or execution flow.
-- Follow `rules/code_quality.md` and `rules/project_standards.md`.
-- If changing a shared file, verify all consumers still work (Strategic Impact Analysis).
-- Ask the user to accept the fix.
-
-DO NOT proceed to Step 4 until the user approves the fix.
-
-## Step 4 — Verify the Fix
-
-Run quality checks:
+### Step 4: Verify the Fix
+Run quality checks after applying the fix:
 
 ```bash
 npx tsc --noEmit
-```
-
-```bash
 npm run lint
 ```
 
-**If checks fail**: Loop back to Step 3 and fix. Maximum 3 loops.
+If checks fail, loop back to Step 3. Maximum 3 loops before escalating to the user.
 
-## Step 5 — Report & Git Operations
+### Step 5: Write the Debug Report
+Compile a structured summary using this format:
 
-Load `assets/debug-report-template.md` for the output layout. Compile the final structured debug report:
+```
+Bug:         What was broken
+Root Cause:  Why it was broken (5-Whys conclusion)
+Fix:         What changed and in which files
+Verification: Which checks passed
+Prevention:  How to avoid this class of bug in future
+```
 
-- **Bug**: What was broken
-- **Root Cause**: Why it was broken
-- **Fix**: What was changed and in which file(s)
-- **Verification**: Which quality checks passed
-- **Prevention**: How to avoid this class of bug in future
+Ask the user to test locally. When confirmed, offer to commit via the `git-workflow` skill.
 
-Ask the user to test locally.
+## 4. Anti-Rationalization Table
 
-When the user confirms the fix is good, or explicitly asks to commit/push, execute **Phase 5: Git & PR Operations** from `/workflows/build_feature_agent.md` step-by-step.
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll fix the symptom first, then find the root cause" | Symptom fixes create silent regressions. The root cause always resurfaces. Document it first. |
+| "I'll skip the 5-Whys — the cause is obvious" | "Obvious" causes are often symptoms of a deeper issue. The 5-Whys takes 2 minutes and prevents reopen. |
+| "I'll apply the fix without user approval to save time" | The fix may have unintended side effects the user is aware of. Always confirm before applying. |
+| "I'll skip the typecheck — the fix looks correct" | TypeScript errors surface at compile time, not at runtime. Always run `tsc --noEmit` after a fix. |
+| "I'll read the whole component file to understand context" | Reading large files wastes context. Use `grep` to find the failing lines, then read only those ranges. |
+
+## 5. Red Flags
+
+Signs this skill is being violated:
+
+- Fix applied before root cause is documented
+- `waitForTimeout` or other symptom-masking workarounds used as a "fix"
+- `tsc --noEmit` or `npm run lint` not run after the fix
+- Shared utility modified without checking all consumers
+- Debug report omits the Prevention section
+- User approval skipped before applying the fix
+
+## 6. Verification Gate
+
+Before marking debug investigation complete:
+
+- [ ] Symptom understood: expected vs actual behavior documented
+- [ ] Affected file and lines identified via targeted search
+- [ ] Root cause documented using 5-Whys (one-sentence summary)
+- [ ] Fix targets the root cause — not just the symptom
+- [ ] User approved the fix before application
+- [ ] `npx tsc --noEmit` and `npm run lint` both pass
+- [ ] Debug report written with Bug / Root Cause / Fix / Verification / Prevention sections
+- [ ] User asked to test locally
+
+## 7. References
+
+- [investigation-playbook.md](references/investigation-playbook.md) — Tracing techniques and debugging patterns
+- [debug-report-template.md](assets/debug-report-template.md) — Structured output format

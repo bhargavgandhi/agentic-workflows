@@ -1,249 +1,85 @@
 ---
 name: playwright
 description: Write, run, and debug end-to-end tests using Playwright. Covers test structure, selectors, POM, async handling, network mocking, and CI/CD integration.
-metadata:
-  pattern: pipeline
+version: 2.0.0
+category: technology
+optional: true
+phase: null
+dependencies: []
 ---
 
-# Playwright E2E Skill
+## 1. Trigger Conditions
 
-**Role**: You are a Playwright automation engineer. You write reliable, maintainable, and fast E2E tests using `@playwright/test`.
+Invoke this skill when:
 
----
+- Writing new end-to-end tests for any web feature
+- Migrating an existing test suite to Playwright
+- Debugging a flaky or broken E2E test
+- Setting up Playwright in a new project (config, CI integration)
+- Implementing authentication reuse or network mocking strategies
 
-## 1. Setup
+## 2. Prerequisites
 
-```bash
-# Install Playwright in an existing project
-npm init playwright@latest
+- `@playwright/test` installed and browsers downloaded (`npx playwright install`)
+- `playwright.config.ts` present at project root with `baseURL`, `testDir`, and retry settings
+- Dev server start command known (and port confirmed before writing tests)
 
-# Or add to an existing project
-npm install -D @playwright/test
-npx playwright install  # installs browsers
-```
+## 3. Steps
 
-**Minimal `playwright.config.ts`**:
-```typescript
-import { defineConfig } from '@playwright/test';
+### Step 1: Confirm the Dev Server Port
+Before writing a single line of test code, verify which port the dev server runs on. Do not assume `3000` or `8080`. Run or read the start script.
 
-export default defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-  ],
-});
-```
+### Step 2: Choose the Right Selector
+Follow this priority order — top to bottom:
 
----
+1. `getByRole('button', { name: 'Submit' })` — most stable, tests accessibility
+2. `getByLabel('Email')` — for form inputs
+3. `getByText('Confirm order')` — for unique stable text
+4. `locator('[data-testid="submit-btn"]')` — fallback when no semantic target exists
+5. `locator('.btn-primary')` — **never** use; classes change without notice
 
-## 2. Test Structure
+### Step 3: Structure Tests with Page Object Model (POM)
+For any flow with more than 2–3 interactions, extract a Page Object:
 
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Feature: User Login', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-  });
-
-  test('should log in with valid credentials', async ({ page }) => {
-    // Arrange
-    await page.getByLabel('Email').fill('user@example.com');
-    await page.getByLabel('Password').fill('password123');
-
-    // Act
-    await page.getByRole('button', { name: 'Sign in' }).click();
-
-    // Assert
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-  });
-
-  test('should show error on invalid credentials', async ({ page }) => {
-    await page.getByLabel('Email').fill('bad@example.com');
-    await page.getByLabel('Password').fill('wrong');
-    await page.getByRole('button', { name: 'Sign in' }).click();
-
-    await expect(page.getByText('Invalid credentials')).toBeVisible();
-  });
-});
-```
-
----
-
-## 3. Selector Strategy (Priority Order)
-
-```typescript
-// ✅ BEST: Role-based (most accessible and stable)
-page.getByRole('button', { name: 'Submit' })
-page.getByRole('textbox', { name: 'Email' })
-page.getByLabel('Username')
-
-// ✅ GOOD: Test IDs (for complex UI without clear roles)
-page.locator('[data-testid="submit-button"]')
-page.locator('[data-cy="user-input"]')
-
-// ✅ GOOD: Text content (for unique, stable text)
-page.getByText('Confirm your order')
-page.getByText(/welcome back/i)
-
-// ⚠️ OK: Semantic attributes
-page.locator('input[name="email"]')
-page.locator('button[type="submit"]')
-
-// ❌ AVOID: Classes / IDs (can change without warning)
-page.locator('.btn-primary')
-page.locator('#submit-btn')
-```
-
-**Advanced locator chaining**:
-```typescript
-// Filter rows containing specific text
-const row = page.locator('tr').filter({ hasText: 'John Doe' });
-await row.getByRole('button', { name: 'Edit' }).click();
-
-// nth element
-await page.locator('li').nth(2).click();
-```
-
-**Selector priority**: Primary: `getByRole`. Secondary: `getByLabel`, `getByText`, `getByTestId`. Fallback: `page.locator('css-selector')`.
-
----
-
-## 4. Page Object Model (POM)
-
-Create one Page Object per page or major component:
-
-```typescript
+```ts
 // tests/e2e/pages/LoginPage.ts
-import { Page, Locator } from '@playwright/test';
-
 export class LoginPage {
-  private page: Page;
-  readonly emailInput: Locator;
-  readonly passwordInput: Locator;
-  readonly submitButton: Locator;
-  readonly errorMessage: Locator;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.emailInput = page.getByLabel('Email');
-    this.passwordInput = page.getByLabel('Password');
-    this.submitButton = page.getByRole('button', { name: 'Sign in' });
-    this.errorMessage = page.getByTestId('error-message');
-  }
-
-  async goto() {
-    await this.page.goto('/login');
-  }
+  constructor(private page: Page) {}
+  readonly emailInput = this.page.getByLabel('Email');
+  readonly submitButton = this.page.getByRole('button', { name: 'Sign in' });
 
   async login(email: string, password: string) {
     await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
+    await this.page.getByLabel('Password').fill(password);
     await this.submitButton.click();
   }
 }
-
-// Usage in test
-test('login flow', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await loginPage.login('user@example.com', 'password123');
-  await expect(page).toHaveURL('/dashboard');
-});
 ```
 
-**POM best practices**: Encapsulate locators in the constructor. Add helper action methods for complex interactions. Keep assertions in the test `.spec.ts` — POMs should be purely action-oriented and reusable.
+POMs hold locators and actions. Assertions stay in the `.spec.ts` file.
 
----
+### Step 4: Use Auto-Waiting — Never `waitForTimeout`
+Playwright auto-waits for elements to be actionable. Use explicit state waits when you need to block:
 
-## 5. Waiting Strategies
+```ts
+// ✅ Wait for spinner to disappear
+await page.locator('.spinner').waitFor({ state: 'hidden' });
 
-**Use Playwright's auto-waiting — never use `setTimeout`.**
-
-```typescript
-// ✅ Auto-waits for element to be actionable
-await page.getByRole('button', { name: 'Submit' }).click();
-
-// ✅ Wait for navigation after an action
+// ✅ Wait for navigation after click
 await Promise.all([
   page.waitForURL('/dashboard'),
   page.getByRole('button', { name: 'Sign in' }).click(),
 ]);
 
-// ✅ Wait for specific element state
-await page.locator('.spinner').waitFor({ state: 'hidden' });
-await page.locator('.result').waitFor({ state: 'visible' });
-
-// ✅ Wait for network request to complete
-await page.waitForResponse('**/api/data');
+// ❌ Never do this
+await page.waitForTimeout(2000);
 ```
 
----
+### Step 5: Reuse Auth State Across Tests
+Never log in on every test — use `storageState`:
 
-## 6. Assertions
-
-```typescript
-// URL and title
-await expect(page).toHaveURL('/dashboard');
-await expect(page).toHaveTitle('My App - Dashboard');
-
-// Element visibility
-await expect(page.locator('.alert')).toBeVisible();
-await expect(page.locator('.modal')).toBeHidden();
-
-// Text content
-await expect(page.locator('h1')).toHaveText('Welcome');
-await expect(page.locator('h1')).toContainText('Welc');
-
-// Input values
-await expect(page.locator('input[name="email"]')).toHaveValue('user@example.com');
-
-// Count
-await expect(page.locator('li')).toHaveCount(5);
-
-// Attribute
-await expect(page.locator('button')).toHaveAttribute('disabled');
-```
-
----
-
-## 7. Network & API Mocking
-
-```typescript
-// Mock an API response
-await page.route('**/api/users', (route) => {
-  route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify([{ id: 1, name: 'Test User' }]),
-  });
-});
-
-// Intercept and modify a request
-await page.route('**/api/cart', (route) => {
-  route.fulfill({ status: 500 });
-});
-```
-
----
-
-## 8. Authentication Reuse (Avoid Logging in Per Test)
-
-Using `storageState` to reuse a session:
-```typescript
-// auth.setup.ts (run once before all tests)
-import { test as setup } from '@playwright/test';
-
+```ts
+// auth.setup.ts
 setup('authenticate', async ({ page }) => {
   await page.goto('/login');
   await page.getByLabel('Email').fill(process.env.TEST_USER!);
@@ -253,86 +89,62 @@ setup('authenticate', async ({ page }) => {
 });
 ```
 
-```typescript
-// In your test file, apply saved auth state
-test.use({ storageState: '.auth/user.json' });
-```
+Apply in test files: `test.use({ storageState: '.auth/user.json' });`
 
----
-
-## 9. Workflow Rules
-
-**Gate Condition:** You must follow these sequentially. DO NOT bypass them.
-
-1. **Detect first**: When testing localhost, **always** check which port the dev server is running on before writing test code. DO NOT proceed until you verified the port.
-2. **Visible browser**: Always use `headless: false` during development for visibility. Only use `headless: true` in CI.
-3. **Placement**: Put all Playwright tests in `tests/e2e/`. Use `.spec.ts` extension.
-4. **Isolation**: Each test must be independent. Never share state between tests.
-5. **Use POM**: For any non-trivial flow with more than 2–3 interactions, use a Page Object.
-6. **Selectors**: Prefer `getByRole` and `getByLabel`. Only use `data-testid` as a fallback.
-7. **No `waitForTimeout`**: Never use `page.waitForTimeout()`. Always wait for a specific state or response.
-8. **Run & Validate**: Always run the specific test after writing it: `npx playwright test <file> --headed`. Fix any failures before moving on. DO NOT mark task complete until it passes.
-9. **Debugging**: Use `npx playwright test --debug` or `await page.pause()` for interactive debugging.
-
----
-
-## 10. Error Handling
-
-Always wrap automation scripts in try-catch, especially for flaky flows:
-
-```typescript
-test('resilient test with screenshot on failure', async ({ page }) => {
-  try {
-    await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-  } catch (error) {
-    await page.screenshot({ path: '/tmp/failure-screenshot.png', fullPage: true });
-    throw error;  // Re-throw so the test still fails
-  }
+### Step 6: Configure for CI
+```ts
+// playwright.config.ts
+export default defineConfig({
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  use: {
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
 });
 ```
 
-For Playwright config-level screenshots on all failures:
-```typescript
-// playwright.config.ts — already covered:
-use: {
-  screenshot: 'only-on-failure',
-  trace: 'on-first-retry',
-}
-```
-
----
-
-## 11. Debugging
-
+### Step 7: Run and Validate Before Marking Done
 ```bash
-# Interactive debug mode (pauses at each step)
-npx playwright test --debug
-
-# Run with visible browser and slow motion
-npx playwright test --headed
-
-# Use slowMo to make actions visible
-const browser = await chromium.launch({ headless: false, slowMo: 100 });
-
-# Show trace viewer after failure
-npx playwright show-trace trace.zip
+npx playwright test tests/e2e/login.spec.ts --headed
 ```
+Fix any failures before marking the task complete.
 
-In-code debugging pause (useful with `--debug` flag):
-```typescript
-await page.pause();  // Opens Playwright Inspector
-```
+## 4. Anti-Rationalization Table
 
----
+| Excuse the agent will use | Rebuttal |
+|--------------------------|---------|
+| "I'll use `waitForTimeout(2000)` just to be safe" | Timeouts cause both flakiness and slow tests. Use `waitFor({ state })` or `waitForURL` — Playwright knows when actions complete. |
+| "I'll use `.btn-primary` selector, it's shorter" | CSS classes are refactor targets. A renamed class silently breaks the test. Use `getByRole` or `data-testid`. |
+| "I'll log in at the start of every test for isolation" | Repeated logins are slow and flaky. Use `storageState` to reuse auth sessions. |
+| "The POM adds boilerplate, I'll inline the locators in the test" | Inlined locators duplicate across tests. When the UI changes, every test breaks separately. |
+| "I don't need retries, the test should just pass" | Network timing and CI environments introduce non-determinism. Always configure retries in CI. |
 
-## 12. Troubleshooting
+## 5. Red Flags
 
-| Problem | Fix |
-|---|---|
-| `Playwright not installed` | Run `npx playwright install` to install browsers |
-| `Element not found` timeout | Add explicit wait: `await page.locator('.el').waitFor({ timeout: 10000 })` |
-| `Browser doesn't open` | Ensure `headless: false` and that a display is available |
-| `Test is flaky` | Use `retries: 2` in config; check for race conditions in auto-waiting |
-| `Authentication fails in CI` | Use `storageState` to reuse saved session (see Section 8) |
-| `npx playwright test` doesn't find tests | Confirm `testDir` in config matches your folder structure |
+Signs this skill is being violated:
+
+- `page.waitForTimeout()` used anywhere in the test suite
+- Selectors use CSS class names (`.btn-primary`, `#submit`)
+- Every test file re-implements a login flow instead of using `storageState`
+- No Page Object exists for flows with 3+ interactions
+- `playwright.config.ts` missing `retries` for CI
+- Dev server port hard-coded without verification
+
+## 6. Verification Gate
+
+Before marking Playwright work complete:
+
+- [ ] Dev server port verified before test code was written
+- [ ] Selectors use `getByRole`, `getByLabel`, or `getByText` — no CSS classes
+- [ ] POM created for any flow with 3+ interactions
+- [ ] No `waitForTimeout` calls — replaced with explicit state waits
+- [ ] Auth state reused via `storageState` if login is required
+- [ ] `retries: 2` set for CI in `playwright.config.ts`
+- [ ] Tests run locally and pass: `npx playwright test --headed`
+
+## 7. References
+
+- [playwright-config.md](references/playwright-config.md) — Config file patterns and CI setup
+- [pom-patterns.md](references/pom-patterns.md) — Page Object Model conventions
+- [auth-reuse.md](references/auth-reuse.md) — storageState and global setup

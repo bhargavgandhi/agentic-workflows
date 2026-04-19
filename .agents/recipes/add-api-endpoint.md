@@ -27,7 +27,7 @@ parameters:
     description: Does this endpoint require authentication?
 skills_required:
   - backend-engineer
-workflow: build_feature_agent
+workflow: build-feature
 tags: [api, backend, rest, graphql, endpoint]
 ---
 

@@ -23,7 +23,7 @@ parameters:
     default: npm run test
 skills_required:
   - git-workflow
-workflow: build_feature_agent
+workflow: build-feature
 tags: [ci, github-actions, deployment, pipeline, devops]
 ---
 

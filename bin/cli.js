@@ -249,14 +249,17 @@ function showHelp() {
   console.log(pc.bold('  Commands:'));
   console.log('');
   console.log('    ' + pc.cyan('agents-skills') + pc.dim('                          Full install wizard'));
-  console.log('    ' + pc.cyan('agents-skills add') + pc.dim(' <skill>               Install a single skill'));
-  console.log('    ' + pc.cyan('agents-skills list') + pc.dim(' [--skills|--workflows] List installed content'));
-  console.log('    ' + pc.cyan('agents-skills doctor') + pc.dim('                   Workspace health check'));
-  console.log('    ' + pc.cyan('agents-skills init') + pc.dim('                     Generate project profile'));
-  console.log('    ' + pc.cyan('agents-skills recipe') + pc.dim(' [name]            Browse and run recipes'));
-  console.log('    ' + pc.cyan('agents-skills tokens') + pc.dim(' [--budget|--file]  Token usage breakdown'));
-  console.log('    ' + pc.cyan('agents-skills compact') + pc.dim('                  Create context snapshot'));
-  console.log('    ' + pc.cyan('agents-skills telemetry') + pc.dim(' [on|off|report] Manage telemetry'));
+  console.log('    ' + pc.cyan('agents-skills install') + pc.dim(' <skill|pack>          Install a skill or pack alias'));
+  console.log('    ' + pc.cyan('agents-skills install') + pc.dim('                       List all available skills & packs'));
+  console.log('    ' + pc.cyan('agents-skills add') + pc.dim(' <skill>                   Install a single skill (legacy alias)'));
+  console.log('    ' + pc.cyan('agents-skills list') + pc.dim(' [--registry]              List installed skills (or registry)'));
+  console.log('    ' + pc.cyan('agents-skills upgrade') + pc.dim(' [--dry-run]           Upgrade skills to latest versions'));
+  console.log('    ' + pc.cyan('agents-skills doctor') + pc.dim('                        Workspace health check'));
+  console.log('    ' + pc.cyan('agents-skills init') + pc.dim('                          Generate project profile'));
+  console.log('    ' + pc.cyan('agents-skills recipe') + pc.dim(' [name]                Browse and run recipes'));
+  console.log('    ' + pc.cyan('agents-skills tokens') + pc.dim(' [--budget|--file]      Token usage breakdown'));
+  console.log('    ' + pc.cyan('agents-skills compact') + pc.dim(' [--auto <json>]       Create context snapshot'));
+  console.log('    ' + pc.cyan('agents-skills telemetry') + pc.dim(' [on|off|report]     Manage telemetry'));
   console.log('');
   console.log(pc.dim('  Run `agents-skills <command> --help` for command-specific help.'));
   console.log('');
@@ -268,7 +271,7 @@ const [,, command, ...rest] = process.argv;
 
 async function run() {
   // First-run telemetry consent (only on install/add commands)
-  if (!command || command === 'add') {
+  if (!command || command === 'add' || command === 'install') {
     await promptTelemetryConsent();
   }
 
@@ -276,7 +279,6 @@ async function run() {
     case 'add': {
       const skillName = rest[0];
       if (!skillName) {
-        // List available skills
         const all = registry.allSkillNames();
         console.log('\nAvailable skills:');
         all.forEach(s => console.log(`  • ${s}`));
@@ -284,6 +286,19 @@ async function run() {
         process.exit(0);
       }
       await installSkill(skillName);
+      break;
+    }
+
+    case 'install': {
+      const { installCommand } = require('../src/commands/install');
+      await installCommand(rest);
+      try { telemetry.track(telemetry.EVENTS.SKILL_ADDED, { args: rest }); } catch {}
+      break;
+    }
+
+    case 'upgrade': {
+      const { upgradeCommand } = require('../src/commands/upgrade');
+      await upgradeCommand(rest);
       break;
     }
 
@@ -336,7 +351,7 @@ async function run() {
 
     case 'compact': {
       const { compactCommand } = require('../src/commands/compact');
-      await compactCommand();
+      await compactCommand(rest);
       try { telemetry.track(telemetry.EVENTS.CONTEXT_COMPACTED); } catch {}
       break;
     }

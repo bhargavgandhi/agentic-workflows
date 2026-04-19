@@ -8,9 +8,10 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 /**
  * Cursor adapter.
  *
- * rules/project_standards.md → .cursorrules (root)
+ * rules/project-standards.md → .cursorrules (root)
  * rules/* (rest)        → .cursor/rules/*.mdc  (MDC format)
  * skills/               → .cursor/skills/
+ * commands/             → .cursor/commands/
  * workflows/            → .cursor/agents/
  * hooks/                → .cursor/rules/<name>.mdc (alwaysApply: true)
  */
@@ -33,15 +34,15 @@ class CursorAdapter extends IDEAdapter {
     // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      // project_standards.md → .cursorrules
-      const globalRules = path.join(rulesDir, 'project_standards.md');
+      // project-standards.md → .cursorrules
+      const globalRules = path.join(rulesDir, 'project-standards.md');
       if (fs.existsSync(globalRules)) {
         await smartCopy(globalRules, path.join(baseDir, '.cursorrules'), clack, 'Cursor Rules Root');
       }
 
       // rules/* (rest) → .cursor/rules/*.mdc
       for (const file of fs.readdirSync(rulesDir)) {
-        if (file === 'project_standards.md' || !file.endsWith('.md')) continue;
+        if (file === 'project-standards.md' || !file.endsWith('.md')) continue;
         const srcFile = path.join(rulesDir, file);
         const name = path.basename(file, '.md');
         const mdc = convertToMDC(srcFile, 'auto');
@@ -69,19 +70,31 @@ class CursorAdapter extends IDEAdapter {
         if (!file.endsWith('.md')) continue;
         const name = path.basename(file, '.md');
         const mdc = convertToMDC(path.join(hooksSrc, file), 'always');
-        
+
         const tmpFile = path.join(os.tmpdir(), `cursor_hook_${name}.mdc`);
         fs.writeFileSync(tmpFile, mdc);
         await smartCopy(tmpFile, path.join(cursorRulesDir, `${name}.mdc`), clack, 'Cursor Hook Rule');
         fs.rmSync(tmpFile);
       }
     }
+
+    // 5. Commands → .cursor/commands/
+    const commandsSrc = path.join(sourceDir, 'commands');
+    await smartCopyFolder(commandsSrc, path.join(targetDir, 'commands'), clack, 'Cursor Command');
+
+    // 6. Recipes → .cursor/recipes/
+    const recipesSrc = path.join(sourceDir, 'recipes');
+    await smartCopyFolder(recipesSrc, path.join(targetDir, 'recipes'), clack, 'Cursor Recipe');
   }
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
     const { clack } = options;
-    const dest = path.join(baseDir, '.cursor', 'skills', skillName);
+    const dest = this.skillDir(baseDir, scope, skillName);
     await smartCopyFolder(skillSrc, dest, clack, skillName);
+  }
+
+  skillDir(baseDir, _scope, skillName) {
+    return path.join(baseDir, '.cursor', 'skills', skillName);
   }
 }
 

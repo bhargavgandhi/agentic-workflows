@@ -18,7 +18,7 @@ parameters:
 skills_required:
   - test-writing
   - playwright
-workflow: build_feature_agent
+workflow: build-feature
 tags: [testing, vitest, playwright, unit, e2e, coverage]
 ---
 
