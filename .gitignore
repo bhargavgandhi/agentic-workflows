@@ -28,3 +28,5 @@ dist-ssr
 # npm publish dist output (generated from .agents/ via prepublishOnly)
 /skills/
 /recipes/
+
+.claude/settings.local.json
