@@ -1,0 +1,2 @@
+# semver: MAJOR on breaking step/gate changes, MINOR on new steps or gotchas, PATCH on wording fixes
+1.0.0
