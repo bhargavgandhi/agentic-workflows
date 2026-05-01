@@ -356,6 +356,12 @@ async function run() {
       break;
     }
 
+    case 'scan': {
+      const { scanCommand } = require('../src/commands/scan');
+      await scanCommand(rest);
+      break;
+    }
+
     case 'telemetry': {
       const { telemetryCommand } = require('../src/commands/telemetry');
       await telemetryCommand(rest);
