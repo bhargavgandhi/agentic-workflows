@@ -93,4 +93,48 @@ function diffManifest(manifestSkills, installedSkills) {
   return { toInstall, toUpdate, current, extra };
 }
 
-module.exports = { manifestExists, readManifest, writeManifest, scanInstalledSkills, diffManifest };
+/**
+ * Detect manifest drift — returns hasDrift boolean and list of issues.
+ *
+ * @param {Array<{ name: string, version: string|null }>} manifestSkills
+ * @param {Array<{ name: string, version: string|null }>} installedSkills
+ * @returns {{
+ *   hasDrift: boolean,
+ *   issues: Array<{ type: 'missing'|'version-mismatch'|'extra', skill: string, details: string }>
+ * }}
+ */
+function detectManifestDrift(manifestSkills, installedSkills) {
+  const diff = diffManifest(manifestSkills, installedSkills);
+  const issues = [];
+
+  for (const s of diff.toInstall) {
+    issues.push({
+      type: 'missing',
+      skill: s.name,
+      details: `manifest requires ${s.name}@${s.version || 'latest'} but it is not installed`,
+    });
+  }
+
+  for (const s of diff.toUpdate) {
+    issues.push({
+      type: 'version-mismatch',
+      skill: s.name,
+      details: `version mismatch: manifest has ${s.manifestVersion}, installed is ${s.installedVersion}`,
+    });
+  }
+
+  for (const s of diff.extra) {
+    issues.push({
+      type: 'extra',
+      skill: s.name,
+      details: `skill ${s.name}@${s.version || 'unknown'} is installed but not in manifest`,
+    });
+  }
+
+  return {
+    hasDrift: issues.length > 0,
+    issues,
+  };
+}
+
+module.exports = { manifestExists, readManifest, writeManifest, scanInstalledSkills, diffManifest, detectManifestDrift };

@@ -7,6 +7,8 @@ const path = require('path');
 const os   = require('os');
 const pc   = require('picocolors');
 
+const { readManifest, scanInstalledSkills, detectManifestDrift } = require('../core/manifest');
+
 /**
  * `agents-skills doctor`
  *
@@ -96,7 +98,31 @@ async function doctorCommand() {
     _info('skills.json registry not found — skipping version checks');
   }
 
-  // ── 4. Skill dependency integrity ─────────────────────────────────────────
+  // ── 4. Manifest drift detection ────────────────────────────────────────────
+  _header('Manifest Drift');
+
+  const cwd = process.cwd();
+  const localManifest = readManifest(cwd);
+
+  if (localManifest && hasAgentsDir) {
+    const skillsDir = path.join(cwd, '.agents', 'skills');
+    const installedSkills = scanInstalledSkills(skillsDir);
+    const drift = detectManifestDrift(localManifest.skills, installedSkills);
+
+    if (drift.hasDrift) {
+      _warn(`Manifest drift detected (${drift.issues.length} issue${drift.issues.length === 1 ? '' : 's'})`);
+      for (const issue of drift.issues) {
+        const icon = issue.type === 'missing' ? '✗' : issue.type === 'version-mismatch' ? '↻' : '⚠';
+        _warn(`  ${icon} ${issue.skill}: ${issue.details}`);
+      }
+    } else {
+      _checkLine(true, 'No manifest drift detected');
+    }
+  } else {
+    _info('.skills.json not found or .agents/ missing — skipping drift checks');
+  }
+
+  // ── 5. Skill dependency integrity ─────────────────────────────────────────
   _header('Skill Dependencies');
 
   if (hasAgentsDir) {
@@ -128,7 +154,7 @@ async function doctorCommand() {
     }
   }
 
-  // ── 5. Project profile ─────────────────────────────────────────────────────
+  // ── 6. Project profile ─────────────────────────────────────────────────────
   _header('Project Profile');
 
   const profilePath = path.join(agentsDir, 'project-profile.json');
@@ -153,7 +179,7 @@ async function doctorCommand() {
     if (profile.language)  console.log(pc.dim(`    Language:  ${profile.language}`));
   }
 
-  // ── 6. Context snapshots ───────────────────────────────────────────────────
+  // ── 7. Context snapshots ───────────────────────────────────────────────────
   _header('Context Snapshots');
 
   const snapshotsDir = path.join(agentsDir, 'context-snapshots');
@@ -173,7 +199,7 @@ async function doctorCommand() {
     _info('No context-snapshots/ directory — will be created on first compact');
   }
 
-  // ── 7. Telemetry status ────────────────────────────────────────────────────
+  // ── 8. Telemetry status ────────────────────────────────────────────────────
   _header('Telemetry');
 
   const configPath = path.join(os.homedir(), '.agents-skills', 'config.json');
@@ -185,7 +211,7 @@ async function doctorCommand() {
     _info('Not configured — run `agents-skills telemetry on` to enable');
   }
 
-  // ── 8. Schema version check ────────────────────────────────────────────────
+  // ── 9. Schema version check ────────────────────────────────────────────────
   _header('Schema Version');
 
   const installedSchemaFile = path.join(agentsDir, '.schema_version');

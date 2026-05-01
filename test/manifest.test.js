@@ -6,7 +6,7 @@ const fs       = require('node:fs');
 const path     = require('node:path');
 const os       = require('node:os');
 
-const { writeManifest, readManifest, manifestExists, scanInstalledSkills, diffManifest } = require('../src/core/manifest');
+const { writeManifest, readManifest, manifestExists, scanInstalledSkills, diffManifest, detectManifestDrift } = require('../src/core/manifest');
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'manifest-test-'));
@@ -205,4 +205,78 @@ test('diffManifest: empty manifest and empty installed (all clear)', () => {
   assert.deepEqual(result.toUpdate, []);
   assert.deepEqual(result.current, []);
   assert.deepEqual(result.extra, []);
+});
+
+test('detectManifestDrift: no drift when all skills match', () => {
+  const manifestSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+    { name: 'react-query', version: '2.1.0' },
+  ];
+  const installedSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+    { name: 'react-query', version: '2.1.0' },
+  ];
+
+  const result = detectManifestDrift(manifestSkills, installedSkills);
+  assert.equal(result.hasDrift, false);
+  assert.deepEqual(result.issues, []);
+});
+
+test('detectManifestDrift: detects missing skills (toInstall)', () => {
+  const manifestSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+    { name: 'test-writing', version: '1.5.0' },
+  ];
+  const installedSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+  ];
+
+  const result = detectManifestDrift(manifestSkills, installedSkills);
+  assert.equal(result.hasDrift, true);
+  assert.ok(result.issues.some(i => i.type === 'missing'));
+});
+
+test('detectManifestDrift: detects version mismatches (toUpdate)', () => {
+  const manifestSkills = [
+    { name: 'grill-me', version: '2.0.0' },
+  ];
+  const installedSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+  ];
+
+  const result = detectManifestDrift(manifestSkills, installedSkills);
+  assert.equal(result.hasDrift, true);
+  assert.ok(result.issues.some(i => i.type === 'version-mismatch'));
+});
+
+test('detectManifestDrift: detects extra skills (extra)', () => {
+  const manifestSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+  ];
+  const installedSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+    { name: 'old-skill', version: '0.9.0' },
+  ];
+
+  const result = detectManifestDrift(manifestSkills, installedSkills);
+  assert.equal(result.hasDrift, true);
+  assert.ok(result.issues.some(i => i.type === 'extra'));
+});
+
+test('detectManifestDrift: detects multiple drift types together', () => {
+  const manifestSkills = [
+    { name: 'grill-me', version: '2.0.0' },
+    { name: 'test-writing', version: '1.5.0' },
+  ];
+  const installedSkills = [
+    { name: 'grill-me', version: '1.0.0' },
+    { name: 'old-skill', version: '0.9.0' },
+  ];
+
+  const result = detectManifestDrift(manifestSkills, installedSkills);
+  assert.equal(result.hasDrift, true);
+  assert.equal(result.issues.length >= 3, true);
+  assert.ok(result.issues.some(i => i.type === 'version-mismatch'));
+  assert.ok(result.issues.some(i => i.type === 'missing'));
+  assert.ok(result.issues.some(i => i.type === 'extra'));
 });
