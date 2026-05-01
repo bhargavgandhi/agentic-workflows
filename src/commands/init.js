@@ -3,16 +3,20 @@
 const fs   = require('fs');
 const path = require('path');
 const pc   = require('picocolors');
-const { detectProject } = require('../core/project-detector');
+const { detectProject }  = require('../core/project-detector');
+const { generatePrimer } = require('../core/primer-generator');
+const { scanInstalledSkills } = require('../core/manifest');
 
 /**
  * `agents-skills init`
  *
  * Scans the workspace and generates .agents/project-profile.json.
- * This file is read by the token counter and workflows to bootstrap
- * context management with the correct model + budget settings.
+ * With --primer: generates .claude/CLAUDE.md from stack + installed skills.
  */
 async function initCommand(args = []) {
+  if (args.includes('--primer')) {
+    return _primerCommand();
+  }
   const clack = require('@clack/prompts');
   const cwd   = process.cwd();
 
@@ -103,6 +107,25 @@ async function initCommand(args = []) {
 
 function _row(label, value) {
   console.log(`  ${pc.dim(label.padEnd(14))} ${pc.cyan(value)}`);
+}
+
+async function _primerCommand() {
+  const cwd       = process.cwd();
+  const profile   = detectProject(cwd);
+  const skillsDir = path.join(cwd, '.agents', 'skills');
+  const skills    = scanInstalledSkills(skillsDir).map(s => s.name);
+
+  console.log('');
+  console.log(pc.bgCyan(pc.black(' 📝 Primer Generator ')));
+  console.log('');
+
+  generatePrimer(cwd, profile, skills);
+
+  const outPath = path.join(cwd, '.claude', 'CLAUDE.md');
+  console.log(pc.green(`  ✓ Written: ${path.relative(cwd, outPath)}`));
+  console.log(pc.dim(`    Framework: ${profile.framework}  Language: ${profile.language}`));
+  console.log(pc.dim(`    Skills: ${skills.length > 0 ? skills.join(', ') : 'none'}`));
+  console.log('');
 }
 
 module.exports = { initCommand };

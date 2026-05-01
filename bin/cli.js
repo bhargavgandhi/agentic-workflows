@@ -256,6 +256,8 @@ function showHelp() {
   console.log('    ' + pc.cyan('agents-skills upgrade') + pc.dim(' [--dry-run]           Upgrade skills to latest versions'));
   console.log('    ' + pc.cyan('agents-skills doctor') + pc.dim('                        Workspace health check'));
   console.log('    ' + pc.cyan('agents-skills init') + pc.dim('                          Generate project profile'));
+  console.log('    ' + pc.cyan('agents-skills init --primer') + pc.dim('                 Write .claude/CLAUDE.md from stack + skills'));
+  console.log('    ' + pc.cyan('agents-skills scan') + pc.dim(' [--strict]               Scan skills for security findings'));
   console.log('    ' + pc.cyan('agents-skills recipe') + pc.dim(' [name]                Browse and run recipes'));
   console.log('    ' + pc.cyan('agents-skills tokens') + pc.dim(' [--budget|--file]      Token usage breakdown'));
   console.log('    ' + pc.cyan('agents-skills compact') + pc.dim(' [--auto <json>]       Create context snapshot'));
