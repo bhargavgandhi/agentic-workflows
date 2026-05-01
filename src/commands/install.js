@@ -9,6 +9,7 @@ const pc         = require('picocolors');
 
 const { SkillRegistry }      = require('../core/skill-registry');
 const { DependencyResolver } = require('../core/dependency-resolver');
+const { readManifest, scanInstalledSkills, diffManifest } = require('../core/manifest');
 
 const SKILLS_DIR  = path.join(__dirname, '..', '..', 'skills');
 const SOURCE_DIR  = path.join(__dirname, '..', '..', '.agents');
@@ -223,12 +224,74 @@ async function _installOne(skillName, selectedIDEs, baseDir, scope, ADAPTERS) {
 }
 
 /**
+ * Handle --dry-run flag: read .skills.json, scan installed skills,
+ * show colour-coded diff, exit without writing.
+ */
+function _dryRun() {
+  const cwd = process.cwd();
+  const manifest = readManifest(cwd);
+
+  if (!manifest) {
+    console.log('');
+    console.log(pc.yellow('⚠️  No .skills.json found. Run `agents-skills init` first.'));
+    console.log('');
+    return;
+  }
+
+  const skillsDir = path.join(cwd, '.agents', 'skills');
+  const installedSkills = scanInstalledSkills(skillsDir);
+  const diff = diffManifest(manifest.skills, installedSkills);
+
+  console.log('');
+  console.log(pc.bgCyan(pc.black(' 📋 Manifest Diff (--dry-run) ')));
+  console.log('');
+
+  if (diff.toInstall.length > 0) {
+    console.log(pc.green(`  + To install (${diff.toInstall.length}):`));
+    diff.toInstall.forEach(s => {
+      console.log(pc.green(`    + ${s.name}@${s.version || 'latest'}`));
+    });
+  }
+
+  if (diff.current.length > 0) {
+    console.log(pc.cyan(`  ✓ Current (${diff.current.length}):`));
+    diff.current.forEach(s => {
+      console.log(pc.cyan(`    ✓ ${s.name}@${s.version || 'unknown'}`));
+    });
+  }
+
+  if (diff.toUpdate.length > 0) {
+    console.log(pc.yellow(`  ↻ To update (${diff.toUpdate.length}):`));
+    diff.toUpdate.forEach(s => {
+      console.log(pc.yellow(`    ↻ ${s.name}: ${s.installedVersion} → ${s.manifestVersion}`));
+    });
+  }
+
+  if (diff.extra.length > 0) {
+    console.log(pc.red(`  ✗ Extra / unused (${diff.extra.length}):`));
+    diff.extra.forEach(s => {
+      console.log(pc.red(`    ✗ ${s.name}@${s.version || 'unknown'}`));
+    });
+  }
+
+  console.log('');
+  console.log(pc.dim('(No changes made — use `agents-skills install` to apply)'));
+  console.log('');
+}
+
+/**
  * `agents-skills install <skill|pack> [<skill|pack> ...]`
  *
  * Installs one or more skills or pack aliases. Pack aliases are resolved to
  * their constituent skills before installation.
  */
 async function installCommand(args, { ADAPTERS } = {}) {
+  // Check for --dry-run flag first
+  if (args.includes('--dry-run')) {
+    _dryRun();
+    return;
+  }
+
   // Allow test injection; default to real adapters
   if (!ADAPTERS) {
     const { AntigravityAdapter } = require('../adapters/antigravity');
