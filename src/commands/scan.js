@@ -6,16 +6,20 @@ const pc   = require('picocolors');
 const { scanSkills } = require('../core/security-scanner');
 
 async function scanCommand(args) {
-  const skillsDir = path.join(process.cwd(), '.agents', 'skills');
+  const strict    = args.includes('--strict');
+  const severities = strict ? ['HIGH', 'MEDIUM', 'LOW'] : ['HIGH'];
+  const skillsDir  = path.join(process.cwd(), '.agents', 'skills');
 
   console.log('');
   console.log(pc.bgRed(pc.white(' 🔍 agents-skills scan ')));
+  if (strict) console.log(pc.dim('  --strict: MEDIUM and LOW rules active'));
   console.log('');
 
-  const findings = scanSkills(skillsDir);
+  const findings = scanSkills(skillsDir, { severities });
 
   if (findings.length === 0) {
-    console.log(pc.green('  ✓ No HIGH-severity findings detected.'));
+    const label = strict ? 'No findings detected.' : 'No HIGH-severity findings detected.';
+    console.log(pc.green(`  ✓ ${label}`));
     console.log('');
     return;
   }
@@ -39,10 +43,16 @@ async function scanCommand(args) {
     console.log('');
   }
 
-  console.log(pc.red(`  ${findings.length} finding${findings.length === 1 ? '' : 's'} detected. Fix before shipping.`));
-  console.log('');
-
-  process.exitCode = 1;
+  const highCount = bySeverity.HIGH.length;
+  if (highCount > 0) {
+    console.log(pc.red(`  ${highCount} HIGH finding${highCount === 1 ? '' : 's'} detected. Fix before shipping.`));
+    console.log('');
+    process.exitCode = 1;
+  } else {
+    const total = findings.length;
+    console.log(pc.yellow(`  ${total} finding${total === 1 ? '' : 's'} detected (no HIGH). Review before shipping.`));
+    console.log('');
+  }
 }
 
 module.exports = { scanCommand };

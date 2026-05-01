@@ -37,5 +37,31 @@
       "del\\s+/[sqf]"
     ],
     "hint": "Destructive operation without confirmation gate. Add an explicit user confirmation step before executing."
+  },
+  {
+    "rule": "unsafe-eval",
+    "severity": "MEDIUM",
+    "patterns": [
+      "\\beval\\s*\\(",
+      "new\\s+Function\\s*\\("
+    ],
+    "hint": "Dynamic code execution via eval() or new Function() is unsafe. Use a safe alternative or sandbox the input."
+  },
+  {
+    "rule": "xss-risk",
+    "severity": "MEDIUM",
+    "patterns": [
+      "innerHTML\\s*=",
+      "outerHTML\\s*=",
+      "document\\.write\\s*\\(",
+      "insertAdjacentHTML\\s*\\("
+    ],
+    "hint": "Direct HTML injection risk. Use textContent or a sanitization library instead."
+  },
+  {
+    "rule": "missing-section",
+    "severity": "LOW",
+    "fileCheck": "missing-verification-gate",
+    "hint": "Skill file is missing a '## Verification Gate' section. Add one to document how to confirm the skill worked."
   }
 ]
