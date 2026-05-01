@@ -104,3 +104,69 @@ test('generatePrimer: creates .claude/ directory if it does not exist', () => {
 
   fs.rmSync(dir, { recursive: true });
 });
+
+// ── Slice 6: Cursor + Copilot output files ────────────────────────────────────
+
+test('generatePrimer: writes .cursor/.cursorrules alongside CLAUDE.md', () => {
+  const dir     = tmpDir();
+  const profile = { framework: 'next.js', language: 'typescript', detectedSkills: [] };
+  generatePrimer(dir, profile, ['grill-me', 'security-and-hardening']);
+
+  const cursorrules = path.join(dir, '.cursor', '.cursorrules');
+  assert.ok(fs.existsSync(cursorrules), '.cursor/.cursorrules should be created');
+
+  const content = fs.readFileSync(cursorrules, 'utf8');
+  assert.ok(content.includes('grill-me'), 'cursorrules should list grill-me');
+  assert.ok(content.includes('security-and-hardening'), 'cursorrules should list security-and-hardening');
+  assert.ok(content.includes('next.js'), 'cursorrules should include framework');
+
+  fs.rmSync(dir, { recursive: true });
+});
+
+test('generatePrimer: writes .github/copilot-instructions.md alongside CLAUDE.md', () => {
+  const dir     = tmpDir();
+  const profile = { framework: 'vite', language: 'javascript', detectedSkills: [] };
+  generatePrimer(dir, profile, ['react-query']);
+
+  const copilotMd = path.join(dir, '.github', 'copilot-instructions.md');
+  assert.ok(fs.existsSync(copilotMd), '.github/copilot-instructions.md should be created');
+
+  const content = fs.readFileSync(copilotMd, 'utf8');
+  assert.ok(content.includes('react-query'), 'copilot instructions should list react-query');
+  assert.ok(content.includes('vite'), 'copilot instructions should include framework');
+
+  fs.rmSync(dir, { recursive: true });
+});
+
+test('generatePrimer: all 3 files list the same skills', () => {
+  const dir     = tmpDir();
+  const profile = { framework: 'vite', language: 'typescript', detectedSkills: [] };
+  const skills  = ['grill-me', 'react-query', 'security-and-hardening'];
+  generatePrimer(dir, profile, skills);
+
+  const claudeMd   = fs.readFileSync(path.join(dir, '.claude', 'CLAUDE.md'), 'utf8');
+  const cursorrules = fs.readFileSync(path.join(dir, '.cursor', '.cursorrules'), 'utf8');
+  const copilotMd  = fs.readFileSync(path.join(dir, '.github', 'copilot-instructions.md'), 'utf8');
+
+  for (const skill of skills) {
+    assert.ok(claudeMd.includes(skill),    `CLAUDE.md should include ${skill}`);
+    assert.ok(cursorrules.includes(skill),  `.cursorrules should include ${skill}`);
+    assert.ok(copilotMd.includes(skill),   `copilot-instructions.md should include ${skill}`);
+  }
+
+  fs.rmSync(dir, { recursive: true });
+});
+
+test('generatePrimer: second run updates cursorrules without duplicating sections', () => {
+  const dir     = tmpDir();
+  const profile = { framework: 'vite', language: 'typescript', detectedSkills: [] };
+  generatePrimer(dir, profile, ['react-query']);
+  generatePrimer(dir, profile, ['react-query', 'grill-me']);
+
+  const content = fs.readFileSync(path.join(dir, '.cursor', '.cursorrules'), 'utf8');
+  const count   = (content.match(/## Active Skills/g) || []).length;
+  assert.equal(count, 1, '## Active Skills should appear once in cursorrules on re-run');
+  assert.ok(content.includes('grill-me'), 'second run should include new skill in cursorrules');
+
+  fs.rmSync(dir, { recursive: true });
+});
