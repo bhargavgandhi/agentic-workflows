@@ -256,6 +256,8 @@ function showHelp() {
   console.log('    ' + pc.cyan('agents-skills upgrade') + pc.dim(' [--dry-run]           Upgrade skills to latest versions'));
   console.log('    ' + pc.cyan('agents-skills doctor') + pc.dim('                        Workspace health check'));
   console.log('    ' + pc.cyan('agents-skills init') + pc.dim('                          Generate project profile'));
+  console.log('    ' + pc.cyan('agents-skills init --primer') + pc.dim('                 Write .claude/CLAUDE.md from stack + skills'));
+  console.log('    ' + pc.cyan('agents-skills scan') + pc.dim(' [--strict]               Scan skills for security findings'));
   console.log('    ' + pc.cyan('agents-skills recipe') + pc.dim(' [name]                Browse and run recipes'));
   console.log('    ' + pc.cyan('agents-skills tokens') + pc.dim(' [--budget|--file]      Token usage breakdown'));
   console.log('    ' + pc.cyan('agents-skills compact') + pc.dim(' [--auto <json>]       Create context snapshot'));
@@ -293,12 +295,14 @@ async function run() {
       const { installCommand } = require('../src/commands/install');
       await installCommand(rest);
       try { telemetry.track(telemetry.EVENTS.SKILL_ADDED, { args: rest }); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'install', outcome: 'success', summary: `install ${rest.join(' ')}` }); } catch {}
       break;
     }
 
     case 'upgrade': {
       const { upgradeCommand } = require('../src/commands/upgrade');
       await upgradeCommand(rest);
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'upgrade', outcome: 'success', summary: `upgrade ${rest.join(' ')}` }); } catch {}
       break;
     }
 
@@ -306,6 +310,7 @@ async function run() {
       const { listCommand } = require('../src/commands/list');
       await listCommand(rest);
       try { telemetry.track(telemetry.EVENTS.DOCTOR_RUN, { command: 'list' }); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'list', outcome: 'success', summary: 'listed installed skills' }); } catch {}
       break;
     }
 
@@ -313,6 +318,7 @@ async function run() {
       const { doctorCommand } = require('../src/commands/doctor');
       await doctorCommand();
       try { telemetry.track(telemetry.EVENTS.DOCTOR_RUN); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'doctor', outcome: 'success', summary: 'ran doctor health check' }); } catch {}
       break;
     }
 
@@ -320,6 +326,7 @@ async function run() {
       const { initCommand } = require('../src/commands/init');
       await initCommand(rest);
       try { telemetry.track(telemetry.EVENTS.PROFILE_GENERATED); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'init', outcome: 'success', summary: `init ${rest.join(' ')}` }); } catch {}
       break;
     }
 
@@ -353,6 +360,18 @@ async function run() {
       const { compactCommand } = require('../src/commands/compact');
       await compactCommand(rest);
       try { telemetry.track(telemetry.EVENTS.CONTEXT_COMPACTED); } catch {}
+      break;
+    }
+
+    case 'scan': {
+      const { scanCommand } = require('../src/commands/scan');
+      await scanCommand(rest);
+      break;
+    }
+
+    case 'memory': {
+      const { memoryCommand } = require('../src/commands/memory');
+      await memoryCommand(rest);
       break;
     }
 

@@ -131,23 +131,50 @@ Load skill: `skills/code-reviewer/SKILL.md`
 
 **GATE**: no blocking issues → proceed to 5b
 
-### 5b. Security Audit `/secure`
+### 5b. Lint + Typecheck + Test (parallel)
+
+> These three checks are independent — run them in parallel to reduce wall time.
+> Buffer each tool's output and print sequentially after all finish.
+> Show a live status line per running tool during execution.
+
+<!-- parallel-group: start -->
+```bash
+npm run lint
+```
+
+```bash
+npx tsc --noEmit
+```
+
+```bash
+npm test
+```
+<!-- parallel-group: end -->
+
+**GATE**: all three pass → proceed to 5c
+
+### 5c. Security Audit `/secure`
+
+> Skipped automatically when only `.md` or config files changed (no source code modified).
+> Condition is evaluated from `git diff --name-only HEAD~1` output.
+
+<!-- condition: source-files-changed -->
 Load skill: `skills/security-and-hardening/SKILL.md`
 - Input validation audit
 - Auth/authorisation check
 - Secrets scan
-- `npm audit --audit-level=high`
-- OWASP checklist
 
-**GATE**: no Critical/High issues → proceed to 5c
+```bash
+agents-skills scan
+```
 
-### 5c. Test Suite `/test`
-Load skill: `skills/test-writing/SKILL.md`
-- Verify all slice tests pass
-- Add coverage for any untested branches found during review
-- Run full test suite: `npm test`
+```bash
+npm audit --audit-level=high
+```
 
-**GATE**: all tests passing, no regressions → proceed to Phase 5a (optional gates)
+**GATE**: no Critical/High issues → proceed to Phase 5a (optional gates)
+
+If condition is false, log: `skipped: no source files changed` and advance directly to Phase 5a.
 
 ---
 
