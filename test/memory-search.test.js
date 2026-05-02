@@ -6,7 +6,7 @@ const fs       = require('node:fs');
 const path     = require('node:path');
 const os       = require('node:os');
 
-const { searchLearnings, memoryStatus } = require('../src/core/memory-search');
+const { searchLearnings, memoryStatus, injectLearnings } = require('../src/core/memory-search');
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'memsearch-test-'));
@@ -130,5 +130,64 @@ test('memoryStatus: returns zeros when memory dirs are empty or missing', () => 
   assert.equal(status.observationCount, 0);
   assert.equal(status.learningCount, 0);
   assert.equal(status.lastCompressed, null);
+  fs.rmSync(dir, { recursive: true });
+});
+
+// ── injectLearnings ───────────────────────────────────────────────────────────
+
+test('injectLearnings: returns top-N learnings scored by context tags', () => {
+  const dir          = tmpDir();
+  const learningsDir = path.join(dir, '.agents', 'memory', 'learnings');
+
+  seedLearning(learningsDir, 'react-1.json',    { title: 'React hooks pattern',    tags: ['react'],      content: 'Use hooks.' });
+  seedLearning(learningsDir, 'react-2.json',    { title: 'React context API',      tags: ['react'],      content: 'Use context.' });
+  seedLearning(learningsDir, 'ts-1.json',       { title: 'TS strict mode',         tags: ['typescript'], content: 'Enable strict.' });
+  seedLearning(learningsDir, 'ts-2.json',       { title: 'TS generics',            tags: ['typescript'], content: 'Use generics.' });
+  seedLearning(learningsDir, 'security-1.json', { title: 'Security hardening',     tags: ['security'],   content: 'Harden APIs.' });
+  seedIndex(learningsDir, [
+    { title: 'React hooks pattern', file: 'react-1.json',    tags: ['react'],      timestamp: new Date().toISOString() },
+    { title: 'React context API',   file: 'react-2.json',    tags: ['react'],      timestamp: new Date().toISOString() },
+    { title: 'TS strict mode',      file: 'ts-1.json',       tags: ['typescript'], timestamp: new Date().toISOString() },
+    { title: 'TS generics',         file: 'ts-2.json',       tags: ['typescript'], timestamp: new Date().toISOString() },
+    { title: 'Security hardening',  file: 'security-1.json', tags: ['security'],   timestamp: new Date().toISOString() },
+  ]);
+
+  // context tags simulate a React + TypeScript project
+  const results = injectLearnings(dir, { contextTags: ['react', 'typescript'], topN: 3 });
+
+  assert.equal(results.length, 3, 'should return exactly 3 learnings');
+  const titles = results.map(r => r.title);
+  assert.ok(
+    titles.every(t => ['React hooks pattern', 'React context API', 'TS strict mode', 'TS generics'].includes(t)),
+    'all returned learnings should be react or typescript tagged',
+  );
+
+  fs.rmSync(dir, { recursive: true });
+});
+
+test('injectLearnings: output fits in 200 tokens (rough word-count proxy)', () => {
+  const dir          = tmpDir();
+  const learningsDir = path.join(dir, '.agents', 'memory', 'learnings');
+
+  for (let i = 0; i < 5; i++) {
+    seedLearning(learningsDir, `l${i}.json`, { title: `Learning ${i}`, tags: ['react'], content: 'Short content.' });
+  }
+  seedIndex(learningsDir, Array.from({ length: 5 }, (_, i) => ({
+    title: `Learning ${i}`, file: `l${i}.json`, tags: ['react'], timestamp: new Date().toISOString(),
+  })));
+
+  const results = injectLearnings(dir, { contextTags: ['react'], topN: 3 });
+  const markdown = results.map(r => `## ${r.title}\ntags: ${r.tags.join(', ')}`).join('\n');
+  const wordCount = markdown.split(/\s+/).length;
+
+  assert.ok(wordCount < 200, `output word count ${wordCount} should be < 200`);
+
+  fs.rmSync(dir, { recursive: true });
+});
+
+test('injectLearnings: returns empty array when no learnings dir', () => {
+  const dir     = tmpDir();
+  const results = injectLearnings(dir, { contextTags: ['react'], topN: 3 });
+  assert.deepEqual(results, []);
   fs.rmSync(dir, { recursive: true });
 });
