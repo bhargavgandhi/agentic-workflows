@@ -5,6 +5,7 @@ const pc   = require('picocolors');
 
 const { compressObservations } = require('../core/memory-compressor');
 const { searchLearnings, memoryStatus, injectLearnings } = require('../core/memory-search');
+const { exportLearning } = require('../core/memory-exporter');
 const { detectProject } = require('../core/project-detector');
 
 async function memoryCommand(args) {
@@ -84,14 +85,45 @@ async function memoryCommand(args) {
       break;
     }
 
+    case 'export': {
+      const [learningName, ...exportFlags] = rest;
+      if (!learningName) {
+        console.log(pc.yellow('  Usage: agents-skills memory export <learning-name> [--force]'));
+        return;
+      }
+      const force     = exportFlags.includes('--force');
+      const skillsDir = path.join(cwd, 'skills');
+
+      console.log('');
+      console.log(pc.bgCyan(pc.black(' 📦 memory export ')));
+      console.log('');
+
+      try {
+        exportLearning(cwd, learningName, skillsDir, { force });
+        const skillMd = path.join(skillsDir, learningName, 'SKILL.md');
+        if (require('fs').existsSync(skillMd)) {
+          console.log(pc.green(`  ✓ Exported: skills/${learningName}/SKILL.md`));
+          console.log(pc.dim(`    Run 'agents-skills doctor' to verify anatomy.`));
+        } else {
+          console.log(pc.yellow(`  ⚠ skills/${learningName}/SKILL.md already exists. Use --force to overwrite.`));
+        }
+      } catch (err) {
+        console.log(pc.red(`  ✗ ${err.message}`));
+        process.exitCode = 1;
+      }
+      console.log('');
+      break;
+    }
+
     default:
       console.log('');
       console.log(pc.bold('  agents-skills memory <subcommand>'));
       console.log('');
-      console.log('    compress        Distill observations into structured learnings');
-      console.log('    search <query>  Search learnings by tag or content');
-      console.log('    status          Show observation/learning counts');
-      console.log('    inject          Surface top-3 relevant learnings for current project');
+      console.log('    compress             Distill observations into structured learnings');
+      console.log('    search <query>       Search learnings by tag or content');
+      console.log('    status               Show observation/learning counts');
+      console.log('    inject               Surface top-3 relevant learnings for current project');
+      console.log('    export <name>        Promote a learning to a full SKILL.md');
       console.log('');
   }
 }
