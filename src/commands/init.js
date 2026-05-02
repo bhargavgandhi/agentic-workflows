@@ -5,7 +5,7 @@ const path = require('path');
 const pc   = require('picocolors');
 const { detectProject }  = require('../core/project-detector');
 const { generatePrimer } = require('../core/primer-generator');
-const { scanInstalledSkills } = require('../core/manifest');
+const { scanInstalledSkills, writeManifest } = require('../core/manifest');
 
 /**
  * `agents-skills init`
@@ -97,6 +97,10 @@ async function initCommand(args = []) {
 
   const profilePath = path.join(agentsDir, 'project-profile.json');
   fs.writeFileSync(profilePath, JSON.stringify(profile, null, 2), 'utf8');
+
+  const skillsDir      = path.join(agentsDir, 'skills');
+  const installedSkills = scanInstalledSkills(skillsDir);
+  writeManifest(cwd, profile.framework || 'full', installedSkills);
 
   clack.outro(pc.green(`✅ Project profile written to .agents/project-profile.json`));
   console.log('');

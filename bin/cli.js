@@ -295,12 +295,14 @@ async function run() {
       const { installCommand } = require('../src/commands/install');
       await installCommand(rest);
       try { telemetry.track(telemetry.EVENTS.SKILL_ADDED, { args: rest }); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'install', outcome: 'success', summary: `install ${rest.join(' ')}` }); } catch {}
       break;
     }
 
     case 'upgrade': {
       const { upgradeCommand } = require('../src/commands/upgrade');
       await upgradeCommand(rest);
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'upgrade', outcome: 'success', summary: `upgrade ${rest.join(' ')}` }); } catch {}
       break;
     }
 
@@ -308,6 +310,7 @@ async function run() {
       const { listCommand } = require('../src/commands/list');
       await listCommand(rest);
       try { telemetry.track(telemetry.EVENTS.DOCTOR_RUN, { command: 'list' }); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'list', outcome: 'success', summary: 'listed installed skills' }); } catch {}
       break;
     }
 
@@ -315,6 +318,7 @@ async function run() {
       const { doctorCommand } = require('../src/commands/doctor');
       await doctorCommand();
       try { telemetry.track(telemetry.EVENTS.DOCTOR_RUN); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'doctor', outcome: 'success', summary: 'ran doctor health check' }); } catch {}
       break;
     }
 
@@ -322,6 +326,7 @@ async function run() {
       const { initCommand } = require('../src/commands/init');
       await initCommand(rest);
       try { telemetry.track(telemetry.EVENTS.PROFILE_GENERATED); } catch {}
+      try { const { captureObservation } = require('../src/core/memory-capture'); captureObservation({ tool: 'init', outcome: 'success', summary: `init ${rest.join(' ')}` }); } catch {}
       break;
     }
 
@@ -361,6 +366,12 @@ async function run() {
     case 'scan': {
       const { scanCommand } = require('../src/commands/scan');
       await scanCommand(rest);
+      break;
+    }
+
+    case 'memory': {
+      const { memoryCommand } = require('../src/commands/memory');
+      await memoryCommand(rest);
       break;
     }
 
