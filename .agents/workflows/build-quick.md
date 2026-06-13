@@ -46,14 +46,29 @@ Check context budget if the implementation spans more than 3 files. If > 70%, tr
 
 ## Phase 3 — Code Review `/review`
 
-Load skill: `skills/code-reviewer/SKILL.md`
+### Mode Detection
+1. Does `.claude/agents/code-review-analyzer.md` exist?
+2. Is the `Agent`/`Task` tool available in this session?
 
+- **Both true** → **Mode A**: dispatch a single `code-review-analyzer` subagent (no parallelism gain with one gate, but context isolation still applies)
+- **Otherwise** → **Mode C**: load `skills/code-reviewer/SKILL.md` directly in this session (today's behaviour, unchanged)
+
+### Mode A
+Dispatch `code-review-analyzer` (wraps `skills/code-reviewer/SKILL.md`, read-only). It returns a report in the Summary/Findings/Notes format (see `plans/orchestrator-subagent-pattern-design.md` Section 4).
+
+### Mode C
 1. Self-review the diff against project standards
 2. Check for: unintended side effects, missing error handling, security issues
-3. Fix all blocking issues immediately
-4. Report suggestions to user (non-blocking)
+3. Produce the Summary/Findings/Notes report
 
-**GATE**: no blocking issues → proceed to Phase 4
+### Merge Logic
+Same as `/build-feature` Phase 5 Merge Logic, steps 2-6 (step 1 — test-coverage-analyzer — doesn't apply here, there's only one gate):
+- Empty Critical/High list → **GATE PASS** → proceed to Phase 4
+- Non-empty → fix sequentially, one finding at a time, re-lint/typecheck after each; re-evaluate
+- If a Critical finding can't be safely auto-fixed → **STOP**, surface to user
+- Medium/Low findings → non-blocking "Suggestions" list shown to user
+
+**GATE**: no Critical/High issues remaining → proceed to Phase 4
 
 ---
 
