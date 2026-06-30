@@ -1,0 +1,67 @@
+[
+  {
+    "rule": "secrets",
+    "severity": "HIGH",
+    "patterns": [
+      "sk-[a-zA-Z0-9]{4,}",
+      "sk-proj-[a-zA-Z0-9]{4,}",
+      "AIza[0-9A-Za-z\\-_]{35}",
+      "AKIA[0-9A-Z]{16}",
+      "ghp_[a-zA-Z0-9]{36}",
+      "xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24}"
+    ],
+    "hint": "Remove hardcoded credentials. Use environment variables or a secrets manager instead."
+  },
+  {
+    "rule": "prompt-injection",
+    "severity": "HIGH",
+    "patterns": [
+      "ignore (all |your )?(previous|prior|above) instructions",
+      "disregard (all |your )?(previous|prior|above) instructions",
+      "forget (all |your )?(previous|prior|above) instructions",
+      "you are now a",
+      "new persona:",
+      "pretend you (are|have no)"
+    ],
+    "hint": "Prompt injection pattern detected. Remove or sandbox instructions that override agent behaviour."
+  },
+  {
+    "rule": "destructive-op",
+    "severity": "HIGH",
+    "patterns": [
+      "rm\\s+-rf\\s+[/~]",
+      "rm\\s+-rf\\s+\\*",
+      "DROP\\s+TABLE",
+      "DROP\\s+DATABASE",
+      "format\\s+[A-Za-z]:",
+      "del\\s+/[sqf]"
+    ],
+    "hint": "Destructive operation without confirmation gate. Add an explicit user confirmation step before executing."
+  },
+  {
+    "rule": "unsafe-eval",
+    "severity": "MEDIUM",
+    "patterns": [
+      "\\beval\\s*\\(",
+      "new\\s+Function\\s*\\("
+    ],
+    "hint": "Dynamic code execution via eval() or new Function() is unsafe. Use a safe alternative or sandbox the input."
+  },
+  {
+    "rule": "xss-risk",
+    "severity": "MEDIUM",
+    "patterns": [
+      "innerHTML\\s*=",
+      "outerHTML\\s*=",
+      "document\\.write\\s*\\(",
+      "insertAdjacentHTML\\s*\\("
+    ],
+    "hint": "Direct HTML injection risk. Use textContent or a sanitization library instead."
+  },
+  {
+    "rule": "missing-section",
+    "severity": "LOW",
+    "fileCheck": "missing-verification-gate",
+    "hint": "Skill file is missing a '## Verification Gate' section. Add one to document how to confirm the skill worked."
+  }
+]
