@@ -150,23 +150,55 @@ Load skill: `skills/code-reviewer/SKILL.md`
 - Self-review against all criteria
 - Produce the Summary/Findings/Notes report (do not fix yet — fixes happen in Merge Logic step 4)
 
-#### 5b. Security Audit `/secure`
+#### 5b. Lint + Typecheck + Test (parallel)
+
+> These three checks are independent — run them in parallel to reduce wall time.
+> Buffer each tool's output and print sequentially after all finish.
+> Show a live status line per running tool during execution.
+
+Load skill: `skills/test-writing/SKILL.md` — add coverage for any untested branches found during review (new test files only) before running the suite.
+
+<!-- parallel-group: start -->
+```bash
+npm run lint
+```
+
+```bash
+npx tsc --noEmit
+```
+
+```bash
+npm test
+```
+<!-- parallel-group: end -->
+
+**GATE**: all three pass → proceed to 5c
+
+#### 5c. Security Audit `/secure`
+
+> Skipped automatically when only `.md` or config files changed (no source code modified).
+> Condition is evaluated from `git diff --name-only HEAD~1` output.
+
+<!-- condition: source-files-changed -->
 Load skill: `skills/security-and-hardening/SKILL.md`
 - Input validation audit
 - Auth/authorisation check
 - Secrets scan
-- `npm audit --audit-level=high`
 - OWASP checklist
-- Produce the Summary/Findings/Notes report
 
-#### 5c. Test Suite `/test`
-Load skill: `skills/test-writing/SKILL.md`
-- Verify all slice tests pass
-- Add coverage for any untested branches found during review (new test files only)
-- Run full test suite: `npm test`
-- Produce the Summary/Findings/Notes report
+```bash
+agents-skills scan
+```
+
+```bash
+npm audit --audit-level=high
+```
+
+- Produce the Summary/Findings/Notes report (do not fix yet — fixes happen in Merge Logic step 4)
 
 Proceed to **Merge Logic**.
+
+If condition is false, log: `skipped: no source files changed` and proceed to **Merge Logic** with an empty security findings list.
 
 ### Merge Logic (applies to Mode A and Mode C alike)
 
