@@ -121,21 +121,42 @@ Check context budget between slices. If > 70%, trigger `context-engineering` com
 
 ## Phase 5 — Quality Gates
 
-Load skills for each gate:
+### Mode Detection (run once)
 
-### 5a. Code Review `/review`
+Check both conditions:
+1. Do `.claude/agents/code-review-analyzer.md`, `.claude/agents/security-auditor.md`, and `.claude/agents/test-coverage-analyzer.md` all exist?
+2. Is the `Agent`/`Task` tool available in this session?
+
+- **Both true** → **Mode A** (native parallel subagents, Claude Code only)
+- **Otherwise** → **Mode C** (sequential — today's behaviour, unchanged). Mode B (worktree-parallel) is an experimental escape hatch for non-Claude agents/models that can confirm isolated-session-per-worktree support — see `plans/orchestrator-subagent-pattern-design.md` Section 2. Treat "Mode B unavailable" as the default for every non-Claude-Code platform.
+
+### Mode A — Parallel Subagent Dispatch
+
+Dispatch all 3 subagents in a single message (parallel `Agent`/`Task` calls):
+- `code-review-analyzer` — wraps `skills/code-reviewer/SKILL.md`, read-only
+- `security-auditor` — wraps `skills/security-and-hardening/SKILL.md`, read-only
+- `test-coverage-analyzer` — wraps `skills/test-writing/SKILL.md`, may add new test files only
+
+Each returns a report in the Summary/Findings/Notes format defined in its own `.claude/agents/*.md` (see `plans/orchestrator-subagent-pattern-design.md` Section 4).
+
+After `test-coverage-analyzer` returns, run `git diff --name-status` — if it modified any **pre-existing** file (not just added new test files), treat this as a **Critical** finding for the test gate, surfaced to the user.
+
+Proceed to **Merge Logic**.
+
+### Mode C — Sequential (default fallback, today's behaviour)
+
+#### 5a. Code Review `/review`
 Load skill: `skills/code-reviewer/SKILL.md`
 - Self-review against all criteria
-- Fix all blocking issues immediately
-- Report suggestions to user
+- Produce the Summary/Findings/Notes report (do not fix yet — fixes happen in Merge Logic step 4)
 
-**GATE**: no blocking issues → proceed to 5b
-
-### 5b. Lint + Typecheck + Test (parallel)
+#### 5b. Lint + Typecheck + Test (parallel)
 
 > These three checks are independent — run them in parallel to reduce wall time.
 > Buffer each tool's output and print sequentially after all finish.
 > Show a live status line per running tool during execution.
+
+Load skill: `skills/test-writing/SKILL.md` — add coverage for any untested branches found during review (new test files only) before running the suite.
 
 <!-- parallel-group: start -->
 ```bash
@@ -153,7 +174,7 @@ npm test
 
 **GATE**: all three pass → proceed to 5c
 
-### 5c. Security Audit `/secure`
+#### 5c. Security Audit `/secure`
 
 > Skipped automatically when only `.md` or config files changed (no source code modified).
 > Condition is evaluated from `git diff --name-only HEAD~1` output.
@@ -163,6 +184,7 @@ Load skill: `skills/security-and-hardening/SKILL.md`
 - Input validation audit
 - Auth/authorisation check
 - Secrets scan
+- OWASP checklist
 
 ```bash
 agents-skills scan
@@ -172,9 +194,22 @@ agents-skills scan
 npm audit --audit-level=high
 ```
 
-**GATE**: no Critical/High issues → proceed to Phase 5a (optional gates)
+- Produce the Summary/Findings/Notes report (do not fix yet — fixes happen in Merge Logic step 4)
 
-If condition is false, log: `skipped: no source files changed` and advance directly to Phase 5a.
+Proceed to **Merge Logic**.
+
+If condition is false, log: `skipped: no source files changed` and proceed to **Merge Logic** with an empty security findings list.
+
+### Merge Logic (applies to Mode A and Mode C alike)
+
+1. If the test gate added test files, run `npm test`. Failures here block regardless of the other reports.
+2. Aggregate all Critical/High findings from the review and security reports into one fix list, sorted by severity.
+3. Empty list + tests green → **GATE PASS** → proceed to Phase 5a.
+4. Non-empty → apply fixes **sequentially**, one finding at a time, then re-run lint/typecheck/tests after each.
+5. Re-evaluate: all Critical/High resolved + tests green → **GATE PASS**. If a Critical finding can't be safely auto-fixed → **STOP**, surface to user — never silently skip.
+6. Medium/Low findings from any report are non-blocking — collect into a single "Suggestions" list shown to the user after this phase.
+
+**GATE**: Merge Logic resolves to PASS → proceed to Phase 5a
 
 ---
 

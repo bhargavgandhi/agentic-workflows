@@ -23,8 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-.claude/settings.json
-
 # npm publish dist output (generated from .agents/ via prepublishOnly)
 /skills/
 /recipes/

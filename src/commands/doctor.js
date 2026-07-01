@@ -8,6 +8,7 @@ const os   = require('os');
 const pc   = require('picocolors');
 
 const { readManifest, scanInstalledSkills, detectManifestDrift } = require('../core/manifest');
+const { detectSubagentDrift } = require('../core/subagent-drift');
 
 /**
  * `agents-skills doctor`
@@ -110,12 +111,14 @@ async function doctorCommand() {
     const drift = detectManifestDrift(localManifest.skills, installedSkills);
 
     if (drift.hasDrift) {
+      checks.push(false);
       _warn(`Manifest drift detected (${drift.issues.length} issue${drift.issues.length === 1 ? '' : 's'})`);
       for (const issue of drift.issues) {
         const icon = issue.type === 'missing' ? '✗' : issue.type === 'version-mismatch' ? '↻' : '⚠';
         _warn(`  ${icon} ${issue.skill}: ${issue.details}`);
       }
     } else {
+      checks.push(true);
       _checkLine(true, 'No manifest drift detected');
     }
   } else {
@@ -225,6 +228,30 @@ async function doctorCommand() {
     );
   } else {
     _info(`No schema version marker found. Run \`agents-skills upgrade\` to set up v${PKG_SCHEMA}.`);
+  }
+
+  // ── 10. Subagent Drift ──────────────────────────────────────────────────────
+  _header('Subagent Drift');
+
+  const claudeAgentsDir = path.join(cwd, '.claude', 'agents');
+
+  if (fs.existsSync(claudeAgentsDir)) {
+    const subagentsSourceDir = path.join(__dirname, '..', '..', '.agents', 'subagents');
+    const subagentDrift = detectSubagentDrift(subagentsSourceDir, claudeAgentsDir);
+
+    if (subagentDrift.hasDrift) {
+      checks.push(false);
+      _warn(`Subagent drift detected (${subagentDrift.issues.length} issue${subagentDrift.issues.length === 1 ? '' : 's'})`);
+      for (const issue of subagentDrift.issues) {
+        const icon = issue.type === 'missing' ? '✗' : '↻';
+        _warn(`  ${icon} ${issue.subagent}: ${issue.details}`);
+      }
+    } else {
+      checks.push(true);
+      _checkLine(true, 'No subagent drift detected');
+    }
+  } else {
+    _info('.claude/agents/ not found — skipping subagent drift checks (Claude Code only)');
   }
 
   // ── Summary ────────────────────────────────────────────────────────────────

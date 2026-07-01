@@ -11,6 +11,7 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
  * skills/               → .claude/skills/
  * commands/             → .claude/commands/
  * workflows/            → .claude/agents/
+ * subagents/            → .claude/agents/ (merged with workflows)
  * hooks/                → .claude/hooks/
  */
 class ClaudeAdapter extends IDEAdapter {
@@ -60,6 +61,10 @@ class ClaudeAdapter extends IDEAdapter {
     // 6. Recipes → .claude/recipes/
     const recipesSrc = path.join(sourceDir, 'recipes');
     await smartCopyFolder(recipesSrc, path.join(targetDir, 'recipes'), clack, 'Claude Recipe');
+
+    // 7. Subagents → .claude/agents/ (alongside workflow orchestrators)
+    const subagentsSrc = path.join(sourceDir, 'subagents');
+    await smartCopyFolder(subagentsSrc, path.join(targetDir, 'agents'), clack, 'Claude Subagent');
   }
 
   async installSkill(skillSrc, skillName, baseDir, scope, options = {}) {
