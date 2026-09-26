@@ -106,9 +106,18 @@ labels as ours, not as citations.
 - State lives in files, not conversation. If losing the conversation loses the state, the
   state was in the wrong place.
 - Prefer **isolation over eviction**: fan reading out to subagents so the orchestrator's
-  context grows slowly, instead of letting it grow fast and then clearing.
-- **One** `/clear`, at the Gate 1 → implementation boundary, not one per phase. Phase count
-  is not a proxy for token pressure; keep the existing >70% threshold for everything else.
+  context grows slowly, instead of letting it grow fast and then clearing. Caveat from
+  Anthropic's session-cost guidance: a subagent gets its own context and may re-read what
+  the main session already has, so isolation is a net loss on small jobs. Use it for noisy,
+  read-heavy work with throwaway output.
+- **Clear per phase, not once.** An earlier draft of this plan argued the opposite on cache
+  grounds; that was wrong. Anthropic's guidance is explicit that one long session costs more
+  than the same work split across short ones, because every turn re-reads all accumulated
+  prior turns. The per-turn context multiplier outweighs the one-time re-prefill a fresh
+  session pays. Keep the >70% threshold as an additional trigger, not the only one.
+- What clearing actually costs is **continuity**, not money — and artifacts are the fix.
+  Cost favours short sessions; quality favours an unbroken thread; typed artifacts give
+  continuity without context. That tension is the whole reason §4.2 exists.
 - Capture **negative knowledge incrementally**. The snapshot schema
   (`src/core/context-compactor.js`) has seven fields and every one records what to do. Add
   `ruledOut` and `gotchas`, written as they are discovered and append-only across phases.
@@ -159,6 +168,43 @@ Loop-engineering failure to avoid specifically: the verify→fix loop re-running
 suite each iteration. Scope the re-run to the failing target, then run the full suite once
 before Gate 2.
 
+### 4.4 Session runtime — what the workflow should tell the operator to do
+
+Source: Anthropic, *Maximizing the value of your Claude Code sessions*. Its four
+highest-impact cost factors, in its order: session length and accumulated context, model
+selection, effort level, prompt-cache management.
+
+**Portable — belongs in the workflow itself, works in any tool:**
+
+| Practice | Why it matters here |
+|---|---|
+| Short sessions, one per phase | Cheapest and matches the phase graph exactly |
+| Attach files explicitly rather than describing them | Skips a discovery read; every tool has some form of this |
+| Put the project's commands **with quiet flags** in the agent instructions file | Command output stays in context for the rest of the session. `primer-generator.js` should emit `--reporter=dot`-style flags, not bare commands |
+| Route noisy, read-heavy work to an isolated context | Subagents where available, a second session where not |
+| Never switch model or effort mid-phase | Invalidates the cached prefix and re-prefills at full price |
+| Rename before clearing | Not a context mechanism — it makes the session findable again, which is the only way to recover the dead ends a handoff doc missed |
+
+**Claude Code-specific — an accelerator layer, not core (see §6):**
+
+- `/context` in a fresh session to audit what is loaded. This is strictly better than
+  `agents-skills tokens --budget`, and another reason to retire `token-counter.js`.
+- A **"Compact instructions"** section in the agent instructions file, so compaction
+  preserves the same things every time. This materially weakens the "compaction loses key
+  information" objection — directed compaction is close to a handoff doc at a fraction of
+  the ceremony. Our `gotchas` / `ruledOut` fields are what compact instructions should name.
+- `/rewind` for discarding a small bad stretch — costs nothing, where `/compact` rewrites
+  the whole conversation.
+- `model: haiku` in a subagent definition — confirms the per-subagent model tiering in
+  `plans/orchestrator-subagent-pattern-design.md` is a one-line frontmatter change.
+- Cache TTL is ~1 hour on subscriptions, ~5 minutes on API keys; compact before a break
+  rather than after it.
+- Do not run recurring loops in the main session; give them their own.
+- Output over ~30,000 characters is spilled to a file with a preview inline;
+  `BASH_MAX_OUTPUT_LENGTH` tunes it.
+- Output tokens cost roughly 5x input, which is why report contracts should be tables, not
+  prose.
+
 ---
 
 ## 5. Sourcing model — pinned references, not floating
@@ -201,22 +247,65 @@ thing that makes composition possible. This is the layer to invest in.
 
 ---
 
-## 6. Distribution
+## 6. Distribution — cross-tool is a requirement, not a preference
 
-Decided earlier in this thread: the repo stays a product installed from npm. So v4 keeps the
-CLI rather than going plugin-only — but adds a Claude Code plugin manifest as a second
-distribution path, because that is where subagents, hooks and per-agent model selection
-actually work.
+**Decided**: this must run under Claude Code, Cursor, GitHub Copilot, ChatGPT-driven local
+editing, and any future agent. That settles §8.1 and it is the most consequential constraint
+in this document, because it demotes everything tool-specific.
 
-- **npm CLI** — stays the installer for Cursor / VS Code / Antigravity, and shrinks to
-  detect-stack + write-artifacts + resolve-sources
-- **Claude Code plugin** — bundles the workflow, subagents, hooks, and `gate-protocol`;
-  versioned and updated by the plugin system rather than by `upgrade.js`
-- Verify the plugin manifest schema against current Claude Code docs before implementing;
-  do not infer it
+### 6.1 The portable substrate
 
-Going plugin-only would delete more code but contradicts the npm decision. Worth
-reconsidering explicitly rather than by drift.
+Only two things are available in every tool: **files on disk** and **a prompt**. So the core
+of v4 is exactly that, and nothing else:
+
+1. **Artifacts** (§4.2) — the phase graph, as files. A tool that can read and write files
+   can run the workflow, whether or not it has subagents, hooks, or slash commands.
+2. **The workflow spec** — one markdown file the operator pastes or the tool auto-loads.
+3. **Git-level enforcement** — `hooks/guard-gate.js` as a **git** `pre-commit` hook, not a
+   Claude Code `PreToolUse` hook. Git is the one runtime every tool shares. A Claude Code
+   hook fails earlier and is nicer; a git hook fails everywhere and is the floor. CI is the
+   same argument one level out: a workflow job that rejects a PR whose plan lacks
+   `approved: true` enforces Gate 1 against *any* agent, including one we have never heard of.
+
+This is why the artifact-first graph stops being an elegance argument and becomes the
+architecture. Portability was already the reason to build it; now it is the only reason we
+need.
+
+### 6.2 Instruction-file naming
+
+Write **`AGENTS.md`** as the canonical instructions file and make `CLAUDE.md` a thin pointer
+to it, rather than maintaining two. `AGENTS.md` is the emerging cross-tool convention;
+Claude Code reads `CLAUDE.md`. (Confidence: high that `AGENTS.md` is the convention multiple
+tools now read, lower on per-tool specifics — verify each target's precedence rules before
+shipping, and keep `primer-generator.js` writing whichever file each adapter declares.)
+
+### 6.3 Tiering, not forking
+
+One workflow, three tiers of capability, degrading silently — the same structure
+`plans/orchestrator-subagent-pattern-design.md` already uses for Mode A/B/C, generalized:
+
+| Tier | Available where | What it adds |
+|---|---|---|
+| **Core** | everywhere | Artifacts, the workflow spec, git hooks, CI gate |
+| **Assisted** | tools with project instruction files and custom commands | Auto-loaded instructions, one command to start a phase |
+| **Accelerated** | Claude Code | Parallel subagents, per-subagent `model:`, PreToolUse hooks, `/context`, compact instructions, `/rewind` |
+
+The rule: **no tier-3 feature may be load-bearing.** If the workflow only produces a correct
+Gate 2 report when subagents exist, it is a Claude Code product wearing a cross-tool label.
+The eval suite in Stage 4 should run at Core tier, so the floor is the thing being measured.
+
+### 6.4 Channels
+
+- **npm CLI** — the portable installer. Writes artifacts, detects stack, resolves pinned
+  sources, installs the git hook. Shrinks to roughly detect + write + resolve.
+- **Claude Code plugin** — optional accelerator bundling subagents, hooks and
+  `gate-protocol`. Verify the plugin manifest schema against current docs; do not infer it.
+- **Paste-in fallback** — for ChatGPT or any tool with no project-file mechanism, the CLI
+  emits a single self-contained phase prompt including the relevant artifact contents. This
+  is the tier-1 escape hatch and it must be tested, not assumed.
+
+Plugin-only is now off the table. It would delete the most code and break the primary
+requirement.
 
 ---
 
@@ -257,15 +346,29 @@ markdown.
 
 ---
 
-## 8. Decisions needed
+## 8. Decisions
 
-1. **Multi-IDE** — keep Cursor / VS Code / Antigravity as supported targets, or narrow to
-   Claude Code? Keeping them is what forces the artifact-first design (a good constraint)
-   but it caps how much of the subagent and hook machinery can be core.
-2. **Pin vs float** — recommendation is pin (§5). Floating is simpler to describe and
-   strictly worse to debug.
-3. **Plugin-only** — reconsider §6 explicitly. It deletes the most code and loses non-Claude
-   IDEs.
-4. **`env-scanner` + `codebase-mapper`** — finish as Phase 1 Haiku subagents, or delete the
-   pair? Recommendation: finish. Phase 1 currently has no repo-orientation step at all, and
-   these two are already written.
+1. ~~**Multi-IDE**~~ — **settled**: cross-tool is a requirement (§6). Core tier is files plus
+   a prompt; enforcement is git and CI; Claude Code features are an accelerator that may
+   never be load-bearing.
+2. ~~**Plugin-only**~~ — **settled**: off the table, it breaks (1).
+3. **Pin vs float** — open. Recommendation is pin (§5). Floating is simpler to describe and
+   strictly worse to debug, and cross-tool makes it worse still: an upstream skill that only
+   exists in one tool's format silently drops the workflow to a lower tier.
+4. **`env-scanner` + `codebase-mapper`** — open. Finish as Phase 1 subagents, or delete the
+   pair? Recommendation: finish, but write them as artifact producers
+   (`.codebase-intel/*.md`) so they work at Core tier, with subagent dispatch as the
+   accelerated path.
+5. **New**: does a skill with no cross-tool equivalent still earn a place? `accessibility-
+   engineering` and `storybook` are plain markdown and portable. Anything requiring a
+   tool-specific runtime is a tier-3 feature and cannot be core.
+
+---
+
+## 9. Changelog
+
+- **2026-09-26** — Initial plan.
+- **2026-09-26** — Revised against Anthropic's *Maximizing the value of your Claude Code
+  sessions*: reversed the per-phase-clear cost argument in §4.1 (long sessions cost more,
+  not less), added §4.4 session runtime, added the small-job caveat to subagent isolation.
+  Rewrote §6 for the cross-tool requirement and closed decisions 1 and 2.
