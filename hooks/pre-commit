@@ -16,5 +16,9 @@ if grep -r "\.agent/" .agents/ > /dev/null; then
   exit 1
 fi
 
+# 3. Gate 1 — no source commits without a human-approved plan for this branch.
+#    Fast local feedback; CI runs the same check and cannot be skipped.
+node hooks/guard-gate.js --staged || exit 1
+
 echo "✅ Pre-commit checks passed!"
 exit 0

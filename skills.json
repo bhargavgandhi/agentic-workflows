@@ -3,6 +3,7 @@
   "skills_directory": ".agents/skills",
   "bundles": {
     "frontend": [
+      "gate-protocol",
       "grill-me",
       "context-engineering",
       "write-a-prd",
@@ -22,6 +23,7 @@
       "rtk-query"
     ],
     "backend": [
+      "gate-protocol",
       "grill-me",
       "context-engineering",
       "write-a-prd",
@@ -38,6 +40,7 @@
       "graphql-backend"
     ],
     "fullstack": [
+      "gate-protocol",
       "grill-me",
       "context-engineering",
       "write-a-prd",
@@ -60,6 +63,7 @@
       "graphql-frontend"
     ],
     "full": [
+      "gate-protocol",
       "grill-me",
       "context-engineering",
       "write-a-prd",
@@ -95,6 +99,7 @@
     ]
   },
   "skills": [
+    "gate-protocol",
     "grill-me",
     "context-engineering",
     "write-a-prd",
@@ -868,6 +873,29 @@
         "env",
         "feature-flags",
         "secrets"
+      ],
+      "dependencies": [],
+      "packs": []
+    },
+    "gate-protocol": {
+      "version": "1.0.0",
+      "category": "process",
+      "skillType": "core",
+      "optional": false,
+      "bundle": [
+        "frontend",
+        "backend",
+        "fullstack",
+        "full"
+      ],
+      "phase": 0,
+      "description": "Defines what a gate is, what stopping at one looks like, and the artifact each phase must produce",
+      "pattern": "pipeline",
+      "tags": [
+        "gates",
+        "workflow",
+        "artifacts",
+        "approval"
       ],
       "dependencies": [],
       "packs": []

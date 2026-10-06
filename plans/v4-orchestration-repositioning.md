@@ -1,7 +1,7 @@
 # v4 — Repositioning: from skill library to orchestration layer
 
 **Date**: 2026-09-26
-**Status**: Stage 0 complete — Stages 1–4 pending
+**Status**: Stages 0–1 complete (Stage 1 pending its end-to-end validation) — Stages 2–4 pending
 **Supersedes strategy in**: `README.md` (three-layer architecture), `plans/implementation-plan-v3.md`
 **Builds on**: `plans/orchestrator-subagent-pattern-design.md` (keep — it is the one design that survives this pivot intact)
 
@@ -355,10 +355,26 @@ Sync the 22 versions. Register or delete the 3 orphans. Drop the `doc-coauthorin
 `app-architect`. Fix the context-window table. Install `.claude/agents/` so Mode A runs here.
 Do this regardless of everything below.
 
-**Stage 1 — the contract** (1–2 days)
-Write the artifact schemas (§4.2), `gate-protocol`, the single `controlled-delegation`
-workflow with FULL/QUICK modes, the kickoff template, and `hooks/guard-gate.js`. Delete
-nothing yet. Validate by running one real feature through it end to end.
+**Stage 1 — the contract** — built, see `plans/v4-stage-1-contract.md`
+
+Shipped: `src/core/gate-check.js` + `hooks/guard-gate.js` (git hook and CI job),
+`gate-protocol` skill with `references/artifact-schemas.md` and three templates,
+`.agents/workflows/controlled-delegation.md` (7 phases, FULL/QUICK, capability tiers),
+`docs/agent-log.md`, `gate-protocol` registered as core in all bundles,
+`source-driven-development` phase metadata corrected. 15 new tests, 101 passing.
+Nothing deleted.
+
+Gate 1 is now enforced rather than described: a source-code commit is blocked unless a
+plan in `plans/` carries `approved: true` **and** `branch: <current-branch>`; protected
+branches are blocked; `.env*`, CI workflows and container config are blocked unless the
+approved plan names them in `touches:`. Docs- and plan-only commits always pass, so
+writing the plan is never blocked by the plan not existing yet. Verified in both
+directions against live git state — passes with the approved plan, blocks with
+`approved: false`.
+
+**Still outstanding for Stage 1**: run one real feature through all seven phases at Core
+tier. Until that passes, Stage 2's deletions are premature — this is the gate on
+everything after it.
 
 **Stage 2 — the source swap** (2–3 days)
 Introduce `sources.json` (pinned — decision 3). Replace owned skills with pinned refs plus
@@ -448,3 +464,9 @@ markdown.
   owned set (§7 Stage 2), and the decision to own the eval runner rather than depend on
   `skill-eval-harness` (§7 Stage 4). Recorded the branch convention and the two dropped
   skills (§8).
+- **2026-10-06** — Stage 1 built: artifact schemas, `gate-protocol`, the single
+  `controlled-delegation` workflow, and enforced Gate 1 via `guard-gate.js` in both a git
+  pre-commit hook and a CI job. Chose git + CI over a Claude Code `PreToolUse` hook because
+  only git is a surface every agent must pass through. Stage 1's own plan
+  (`plans/v4-stage-1-contract.md`) is the first dogfood of the artifact. End-to-end
+  validation still outstanding.
