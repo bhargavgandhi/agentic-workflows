@@ -427,7 +427,8 @@ markdown.
 
 - **Branches**: `<type>/<semantic-name>` with `feat/ fix/ chore/ docs/ refactor/ hotfix/`
   — `feat/`, not `feature/`, so the prefix matches the Conventional Commits type.
-  Recorded in `git-workflow/references/branch-naming.md` (Stage 0).
+  Recorded in `git-workflow/references/branch-naming.md` (Stage 0). All v4 work lives on
+  `feat/v4-orchestration-layer`.
 - **Dropped from scope**: style-only-changes-for-designers skill; JS→TS codemod migration
   skill. Too specific to earn maintenance.
 
