@@ -174,6 +174,16 @@ async function upgradeCommand(args) {
       replacedBy: 'documentation-and-adrs',
       note: 'Renamed and expanded. Use `documentation-and-adrs` for ADRs and technical decision docs.',
     },
+    {
+      name: 'app-architect',
+      replacedBy: 'write-a-prd',
+      note: 'Deprecated in v3, removed in v3.1. Its requirements interview is covered by `write-a-prd` and `prd-to-plan`.',
+    },
+    {
+      name: 'skill-anatomy-validator',
+      replacedBy: 'skill-creator',
+      note: 'Never published to the registry, so it was never installable. `skill-creator` enforces the 7-section anatomy on output.',
+    },
   ];
   for (const entry of HARD_DELETED_NOTICE) {
     if (plan.installedSet.has(entry.name)) {

@@ -23,3 +23,22 @@ jobs:
           done
 
       - run: npm test
+
+  gate:
+    # Gate 1, server-side. The pre-commit hook gives fast feedback but can be
+    # skipped with --no-verify; this cannot, which is what makes it the real gate.
+    # It is tool-agnostic by design: it checks the diff, not the agent.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Gate 1 — approved plan required for source changes
+        run: node hooks/guard-gate.js --range origin/${{ github.base_ref }}..HEAD

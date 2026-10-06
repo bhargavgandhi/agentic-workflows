@@ -8,7 +8,7 @@ const { ensureDir, smartCopy, smartCopyFolder } = require('../utils/installer');
 /**
  * Cursor adapter.
  *
- * rules/project-standards.md → .cursorrules (root)
+ * rules/project-standards.md → AGENTS.md (root, read natively by Cursor)
  * rules/* (rest)        → .cursor/rules/*.mdc  (MDC format)
  * skills/               → .cursor/skills/
  * commands/             → .cursor/commands/
@@ -34,10 +34,13 @@ class CursorAdapter extends IDEAdapter {
     // 1. Rules
     const rulesDir = path.join(sourceDir, 'rules');
     if (fs.existsSync(rulesDir)) {
-      // project-standards.md → .cursorrules
+      // project-standards.md → AGENTS.md (root)
+      // Cursor reads AGENTS.md from the project root natively, as do Copilot,
+      // Antigravity and Claude Code. `.cursorrules` is legacy and Cursor-only;
+      // writing AGENTS.md gives every tool the same root instructions file.
       const globalRules = path.join(rulesDir, 'project-standards.md');
       if (fs.existsSync(globalRules)) {
-        await smartCopy(globalRules, path.join(baseDir, '.cursorrules'), clack, 'Cursor Rules Root');
+        await smartCopy(globalRules, path.join(baseDir, 'AGENTS.md'), clack, 'Agent Instructions Root');
       }
 
       // rules/* (rest) → .cursor/rules/*.mdc
