@@ -28,3 +28,7 @@ dist-ssr
 /recipes/
 .agents/docs/
 .claude/settings.local.json
+
+# Install-time artifacts — written by the installer into the target workspace.
+# Source of truth for a skill version is its SKILL.md frontmatter.
+.agents/skills/*/.version

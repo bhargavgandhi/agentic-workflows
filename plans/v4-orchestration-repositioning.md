@@ -1,7 +1,7 @@
 # v4 — Repositioning: from skill library to orchestration layer
 
 **Date**: 2026-09-26
-**Status**: Proposed — awaiting decisions in §8
+**Status**: Stage 0 complete — Stages 1–4 pending
 **Supersedes strategy in**: `README.md` (three-layer architecture), `plans/implementation-plan-v3.md`
 **Builds on**: `plans/orchestrator-subagent-pattern-design.md` (keep — it is the one design that survives this pivot intact)
 
@@ -55,16 +55,23 @@ That list is the product.
 
 ## 3. Codebase review — findings
 
-### 3.1 Correctness / hygiene
+### 3.1 Correctness / hygiene — Stage 0, done
 
-| Finding | Evidence | Fix |
-|---|---|---|
-| 22 of 34 skills have a version mismatch between `skills.json` and their `SKILL.md` (mostly registry `1.0.0` vs frontmatter `2.0.0`) | scripted diff of both sources | Scripted sync; `doctor`/`upgrade` compare these, so today `upgrade` re-downloads 22 skills every run |
-| 3 skills on disk are absent from the registry: `codebase-mapper`, `env-scanner`, `skill-anatomy-validator` | `skills.json` has 32 entries, disk has 34 | Register or delete. They ship to npm via `files: [".agents/"]` but cannot be installed |
-| `doc-coauthoring` is a registry ghost — no folder | `skills.json` registry vs disk | Delete the entry; `src/commands/upgrade.js:173` already treats it as hard-deleted |
-| `app-architect` has no `version:`, no `category:`, and does not follow the 7-section anatomy | `.agents/skills/app-architect/SKILL.md` | Delete. README already claims v3 removed it |
-| Stale context windows drive the token budget | `.agents/skills/context-engineering/references/token-budget-guide.md` lists "Claude Sonnet/Opus 4 — 200,000" | Current models are 1M (Opus 5, Sonnet 5); Haiku 4.5 is 200K. The 40% rule computes against the wrong denominator, and `agents-skills tokens --budget` reasons from this file |
-| `source-driven-development` is declared `phase: 1` but every caller loads it in Phase 4 | `build-feature.md:107`, `build-quick.md:32`, `commands/implement.md:8` | Metadata fix |
+| Finding | Resolution |
+|---|---|
+| Version mismatch between `skills.json` and `SKILL.md` frontmatter | **18 registry versions synced** to frontmatter (frontmatter is the source of truth). The earlier count of 22 included four rows resolved by add/remove below, not by a version edit |
+| **Third** source of truth: 20 tracked `.agents/skills/*/.version` files, stale, 12 skills missing one | Deleted from source and gitignored. They are install-time artifacts — every writer (`install.js:165,219`, `upgrade.js:137,152`) takes the version from the registry, never from a shipped file, so nothing read them. This kills the drift class rather than re-syncing it |
+| `codebase-mapper`, `env-scanner` on disk but not in the registry — shipped to npm, impossible to install | **Registered** (optional, `full` bundle). Kept per decision 4 |
+| `skill-anatomy-validator` — same, and never published | **Deleted** + `HARD_DELETED_NOTICE` entry |
+| `doc-coauthoring` registry ghost (no folder) | **Registry entry removed** |
+| `app-architect` — no `version:`, no `category:`, not 7-section, already `deprecated: true` | **Deleted** + `HARD_DELETED_NOTICE` entry |
+| Stale context windows driving the 40% budget ("Claude Sonnet/Opus 4 — 200,000") | **Fixed**: Opus 5 / Sonnet 5 at 1M, Haiku 4.5 at 200K, marked as a cached snapshot, and a note that on a 1M window the 40% figure is a ceiling to stay far below, not a target to fill |
+| `.cursorrules` is legacy and Cursor-only | **Cursor adapter now writes `AGENTS.md`** at root (§6.2) |
+| `doctor` warned about every skill when run in the package source tree | **Fixed**: detects the source tree and reports registration coverage instead; consumer workspaces still get real version checks. Both paths verified |
+| `source-driven-development` declared `phase: 1`, loaded in Phase 4 by every caller | Open — metadata fix, Stage 1 |
+
+Verified after each change: 86/86 tests pass; `doctor` clean in both the source tree
+and a synthetic consumer workspace.
 | `env-scanner` + `codebase-mapper` are an unfinished pair | `codebase-mapper/assets/codebase-map-template.md:60` links to `.codebase-intel/CONFIG-MAP.md`, which only `env-scanner` writes | Finish both as Haiku subagents in Phase 1, or delete both. Deleting one leaves a broken link |
 | Mode A parallel subagents have never run in this repo | `.claude/` contains only `CLAUDE.md` and `settings.json` — no `agents/` | Install them here; `doctor.js:239` already detects the drift |
 | `test-coverage-analyzer`'s "new test files only" rule has no enforcement | design doc §3 specifies a post-hoc `git diff --name-status` check; not implemented anywhere in `src/` | Implement before giving that subagent a cheaper model |
@@ -145,13 +152,19 @@ Artifacts to define (v4's real deliverable):
 
 | Artifact | Written by | Schema owner |
 |---|---|---|
-| `.agents/run/<task>/brief.md` | human (kickoff template) | us |
+| `.agents/run/<task>/brief.md` | **scope adapter** (below) or the kickoff template | us |
 | `plans/<task>.md` with `approved: true` frontmatter | agent, approved by human | us |
 | `plans/<task>.md#ruled-out`, `#gotchas` | agent, append-only during implement | us |
 | `.agents/run/<task>/attempts.json` | verify loop | us |
 | `.agents/run/<task>/reports/{review,security,tests}.md` | subagents | already specified in the subagent design doc §4 |
 | `.agents/run/<task>/gate2.md` | orchestrator | us |
 | `docs/agent-log.md` row | post-approval | us |
+
+**Scope adapter (Phase 0).** The workflow's entry point normalizes whatever the operator
+has into `brief.md`: a pasted requirement, a GitHub issue (`gh api`), a file path, or a URL.
+Jira and Linear are optional adapters later, not v4 — the point is that every downstream
+phase reads one shape regardless of where the work came from. Phase 1 then grills
+`brief.md`, so "interrogate the ticket" and "interrogate the prompt" are the same step.
 
 ### 4.3 Loop — explicit termination, budget, escalation
 
@@ -271,13 +284,36 @@ This is why the artifact-first graph stops being an elegance argument and become
 architecture. Portability was already the reason to build it; now it is the only reason we
 need.
 
-### 6.2 Instruction-file naming
+### 6.2 Instruction-file naming — verified, and it collapses the adapters
 
-Write **`AGENTS.md`** as the canonical instructions file and make `CLAUDE.md` a thin pointer
-to it, rather than maintaining two. `AGENTS.md` is the emerging cross-tool convention;
-Claude Code reads `CLAUDE.md`. (Confidence: high that `AGENTS.md` is the convention multiple
-tools now read, lower on per-tool specifics — verify each target's precedence rules before
-shipping, and keep `primer-generator.js` writing whichever file each adapter declares.)
+`AGENTS.md` is read natively by **Cursor** (root and subdirectories), **GitHub Copilot**
+(root and nested), **Antigravity** (since v1.20.3, Mar 2026), **Codex**, and **Claude Code**
+(since 18 Sep 2026), plus 20+ other tools.
+
+So the per-IDE *instructions* fan-out is obsolete. One root `AGENTS.md` plus `.agents/`
+covers every target we support, and the adapters shrink to only what `AGENTS.md` cannot
+carry: slash commands, subagent definitions, hooks.
+
+Two caveats to keep:
+
+- **VS Code** gates it behind the `chat.useAgentsMdFile` setting and reads the workspace
+  root only, so the VS Code adapter keeps writing `.github/copilot-instructions.md` as a
+  fallback.
+- `.cursorrules` is legacy and Cursor-only. Replaced with `AGENTS.md` in
+  `src/adapters/cursor.js` (Stage 0).
+
+`CLAUDE.md` becomes a thin pointer to `AGENTS.md` rather than a second maintained file.
+
+### 6.2a Repo layout — follow the proven shape
+
+Adopt the layout the Karpathy-guidelines distribution already uses, since it is the
+cross-tool pattern working in the wild:
+
+```
+skills/<skill-name>/SKILL.md     canonical, tool-neutral
+adapters/<agent-id>/             per-tool translation only
+AGENTS.md                        root instructions, shared
+```
 
 ### 6.3 Tiering, not forking
 
@@ -325,10 +361,23 @@ workflow with FULL/QUICK modes, the kickoff template, and `hooks/guard-gate.js`.
 nothing yet. Validate by running one real feature through it end to end.
 
 **Stage 2 — the source swap** (2–3 days)
-Introduce `sources.json`. Replace owned skills with pinned refs plus adapters. Keep only
-`gate-protocol`, `accessibility-engineering`, `storybook` as owned — the three with no
-upstream equivalent. Collapse 4 workflows → 1, 7 commands → 1, 5 recipes → 1, 5 rule files
-→ 2. Retire `memory-*`, `telemetry`, `recipe-engine`, `context-compactor`, `security-scanner`.
+Introduce `sources.json` (pinned — decision 3). Replace owned skills with pinned refs plus
+adapters. Owned set:
+
+| Owned skill | Why it stays |
+|---|---|
+| `gate-protocol` | Nothing upstream defines a gate or a stopping point |
+| `accessibility-engineering` | Real gap; plain markdown, portable |
+| `storybook` | Real gap; plain markdown, portable |
+| `simplicity-first` | Karpathy rule 2 — the one principle none of our 34 skills states. "Minimum code that solves the problem, nothing speculative; rewrite if 200 lines could be 50" |
+| `design-to-code` (optional) | Vision-first from an image; Figma MCP when available. **Must** read a design-system manifest the user supplies — unconstrained is exactly how an agent invents component props |
+
+Collapse 4 workflows → 1, 7 commands → 1, 5 recipes → 1, 5 rule files → 2. Retire
+`memory-*`, `telemetry`, `recipe-engine`, `context-compactor`, `security-scanner`.
+
+Note on `telemetry`: `install` currently prompts for telemetry opt-in on first run, which
+makes a non-interactive install impossible. That blocks the Stage 4 eval harness, so
+retiring telemetry is a prerequisite for measurement, not just cleanup.
 
 **Stage 3 — distribution** (2–3 days)
 Add the plugin manifest. Shrink `install/upgrade/doctor/list`. Bump `schema_version` to
@@ -336,6 +385,20 @@ Add the plugin manifest. Shrink `install/upgrade/doctor/list`. Bump `schema_vers
 `README.md` and `docs/index.html`.
 
 **Stage 4 — the eval** (ongoing; this is the moat)
+
+**Build the runner, don't depend on one.** Surveyed options: `skillgym` generates training
+tasks for fine-tuning skill-use agents (wrong problem); `agent-skills-eval` is a per-skill
+test runner (wrong unit); `skill-eval-harness` measures per-skill causal lift and is the
+closest fit. But our unit is a *workflow*, it must run at Core tier with no Claude-specific
+runner, and taking a dependency on a small third-party repo reintroduces the upstream risk
+this whole plan exists to remove. So own ~150 lines and steal the method:
+
+- paired runs, with and without the gates, same model, same reps
+- repetitions over task count — agent runs are high-variance, so 3 tasks × 5 reps beats
+  5 tasks × 1. A 5-task single-run comparison cannot produce a publishable delta
+- an answer-leak check, so the eval does not hand the agent its own solution
+- three conditions, after SkillsBench: no skills / curated / self-generated
+
 Nobody in this space ships a *measured* workflow. The original workflow spec already
 defines the schema: `docs/agent-log.md` with columns for plan-approved-first-try,
 checks-green-first-run, and review-comment count. That is a scored eval wearing a log's
@@ -352,16 +415,21 @@ markdown.
    a prompt; enforcement is git and CI; Claude Code features are an accelerator that may
    never be load-bearing.
 2. ~~**Plugin-only**~~ — **settled**: off the table, it breaks (1).
-3. **Pin vs float** — open. Recommendation is pin (§5). Floating is simpler to describe and
-   strictly worse to debug, and cross-tool makes it worse still: an upstream skill that only
-   exists in one tool's format silently drops the workflow to a lower tier.
-4. **`env-scanner` + `codebase-mapper`** — open. Finish as Phase 1 subagents, or delete the
-   pair? Recommendation: finish, but write them as artifact producers
+3. ~~**Pin vs float**~~ — **settled**: pin, via `sources.json` with an `update` command that
+   diffs before writing.
+4. ~~**`env-scanner` + `codebase-mapper`**~~ — **settled**: finish, as artifact producers
    (`.codebase-intel/*.md`) so they work at Core tier, with subagent dispatch as the
-   accelerated path.
-5. **New**: does a skill with no cross-tool equivalent still earn a place? `accessibility-
-   engineering` and `storybook` are plain markdown and portable. Anything requiring a
-   tool-specific runtime is a tier-3 feature and cannot be core.
+   accelerated path. Both registered in Stage 0.
+5. ~~**Owned-skill bar**~~ — **settled**: a skill earns a place only if it is plain markdown
+   and portable. Anything needing a tool-specific runtime is a tier-3 feature, not core.
+
+### Conventions settled alongside
+
+- **Branches**: `<type>/<semantic-name>` with `feat/ fix/ chore/ docs/ refactor/ hotfix/`
+  — `feat/`, not `feature/`, so the prefix matches the Conventional Commits type.
+  Recorded in `git-workflow/references/branch-naming.md` (Stage 0).
+- **Dropped from scope**: style-only-changes-for-designers skill; JS→TS codemod migration
+  skill. Too specific to earn maintenance.
 
 ---
 
@@ -372,3 +440,10 @@ markdown.
   sessions*: reversed the per-phase-clear cost argument in §4.1 (long sessions cost more,
   not less), added §4.4 session runtime, added the small-job caveat to subagent isolation.
   Rewrote §6 for the cross-tool requirement and closed decisions 1 and 2.
+- **2026-10-06** — Stage 0 executed (§3.1). Closed decisions 3–5. Verified AGENTS.md is
+  native in Cursor, Copilot, Antigravity and Claude Code, which collapses the per-IDE
+  instructions fan-out (§6.2) and adds the `adapters/<agent-id>/` layout (§6.2a). Added the
+  Phase 0 scope adapter (§4.2), `simplicity-first` and optional `design-to-code` to the
+  owned set (§7 Stage 2), and the decision to own the eval runner rather than depend on
+  `skill-eval-harness` (§7 Stage 4). Recorded the branch convention and the two dropped
+  skills (§8).

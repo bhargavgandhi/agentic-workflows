@@ -2,12 +2,27 @@
 
 ## Model Context Windows
 
+Cached snapshot — verify before relying on a row. Prefer your tool's own
+context readout (e.g. `/context` in Claude Code) over this table.
+
 | Model | Context Window | Recommended Budget (40%) |
 |-------|---------------|--------------------------|
 | Model-agnostic default | 128,000 | 51,200 |
-| Claude Sonnet/Opus 4 | 200,000 | 80,000 |
-| GPT-4o | 128,000 | 51,200 |
-| Gemini 2.5 Pro/Flash | 1,000,000 | 400,000 |
+| Claude Opus 5 | 1,000,000 | 400,000 |
+| Claude Sonnet 5 | 1,000,000 | 400,000 |
+| Claude Haiku 4.5 | 200,000 | 80,000 |
+
+Set the real window explicitly in `agents-skills.config.json` rather than
+inferring it here:
+
+```json
+{ "model": "claude-opus-5", "contextWindow": 1000000, "budgetPercent": 40 }
+```
+
+**The 40% rule is about what you load, not what the window allows.** On a
+1M-window model, 400,000 tokens of loaded context is a context-rot problem
+long before it is a capacity problem — treat the percentage as a ceiling to
+stay far below, not a target to fill.
 
 ## Budget Thresholds
 

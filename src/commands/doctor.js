@@ -68,7 +68,25 @@ async function doctorCommand() {
     const registry = manifest.registry || {};
     const skillsDir = path.join(agentsDir, 'skills');
 
-    if (fs.existsSync(skillsDir)) {
+    // Running inside the agents-skills package source rather than a consumer
+    // workspace: .version files are install-time artifacts that do not exist
+    // here, and the registry is the source of truth, so there is nothing to
+    // compare. Report versions instead of warning about every skill.
+    const isPackageSource =
+      path.resolve(__dirname, '..', '..') === path.resolve(process.cwd());
+
+    if (fs.existsSync(skillsDir) && isPackageSource) {
+      const names = fs.readdirSync(skillsDir, { withFileTypes: true })
+        .filter(e => e.isDirectory())
+        .map(e => e.name);
+      _info(`Package source tree — ${names.length} skill(s) in .agents/skills/, versions read from skills.json`);
+      const unregistered = names.filter(n => !registry[n]);
+      if (unregistered.length > 0) {
+        _warn(`  Not in registry (unreachable by install): ${unregistered.join(', ')}`);
+      } else {
+        _checkLine(true, 'Every skill on disk is registered');
+      }
+    } else if (fs.existsSync(skillsDir)) {
       const installedSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
         .filter(e => e.isDirectory())
         .map(e => e.name);
